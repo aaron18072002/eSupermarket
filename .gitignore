@@ -1,25 +1,55 @@
-# Node dependencies
-node_modules/
-npm-debug.log
-yarn-error.log
+# =========================
+# IDEs and OS Files
+# =========================
+.idea/
+*.iml
+*.iws
+.vscode/
+.DS_Store
+Thumbs.db
 
-# Next.js (Frontend)
+# =========================
+# Backend (Java / Spring Boot / Maven)
+# =========================
+# Ignore all Maven build directories in any backend service
+**/target/
+target/
+
+# Ignore compiled files and packaged applications
+*.class
+*.jar
+*.war
+*.ear
+
+# Keep Maven wrapper scripts (mvnw), but ignore the heavy JAR file
+.mvn/wrapper/maven-wrapper.jar
+
+# Ignore standard Spring Boot logs
+*.log
+
+# =========================
+# Frontend (Next.js / Node.js)
+# =========================
+# Ignore all Node modules
+**/node_modules/
+node_modules/
+
+# Next.js generated folders
+**/.next/
 .next/
 out/
 build/
 
-# NestJS (Backend)
-dist/
+# Ignore frontend error logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# Environment variables (Secrets)
+# =========================
+# Environment Variables (Secrets)
+# =========================
 .env
 .env.*.local
 .env.local
 .env.development
 .env.production
-
-# IDE and OS files
-.vscode/
-.idea/
-.DS_Store
-Thumbs.db
