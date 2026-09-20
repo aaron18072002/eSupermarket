@@ -7,6 +7,26 @@
 .vscode/
 .DS_Store
 Thumbs.db
+desktop.ini
+ehthumbs.db
+
+# Eclipse
+.project
+.classpath
+.settings/
+
+# =========================
+# Database & Tools (DBeaver / DataGrip / Docker)
+# =========================
+.dbeaver/
+.dbeaver-data-sources.xml
+*.dbeaver*
+**/pgdata/
+pgdata/
+*.dump
+*.sql.bak
+docker-compose.override.yml
+docker-compose*.local.yml
 
 # =========================
 # Backend (Java / Spring Boot / Maven)

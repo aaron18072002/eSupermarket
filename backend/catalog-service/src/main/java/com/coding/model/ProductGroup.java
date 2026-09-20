@@ -5,7 +5,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,40 +20,21 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(
-        name = "PRODUCT_GROUPS",
-        indexes = {
-                @Index(name = "idx_product_group_name", columnList = "name"),
-                @Index(name = "idx_product_group_code", columnList = "code", unique = true)
-        }
-)
+@Table(name = "PRODUCT_GROUPS")
 public class ProductGroup extends BaseEntity {
 
+    /**
+     * Unique identifier for the product group.
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", updatable = false, nullable = false)
     private UUID id;
 
+    /**
+     * Name of the product group (used for grouping product variants or collections).
+     */
     @Column(name = "name", nullable = false)
     private String name;
-
-    @Column(name = "code", unique = true)
-    private String code;
-
-    @Column(name = "description", columnDefinition = "TEXT")
-    private String description;
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        ProductGroup that = (ProductGroup) o;
-        return id != null && id.equals(that.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return getClass().hashCode();
-    }
 
 }

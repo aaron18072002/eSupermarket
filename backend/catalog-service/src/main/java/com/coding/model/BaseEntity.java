@@ -14,10 +14,16 @@ import java.time.LocalDateTime;
 @MappedSuperclass
 public class BaseEntity {
 
+    /**
+     * Timestamp when the entity record was created.
+     */
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
+    /**
+     * Timestamp when the entity record was last updated.
+     */
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;

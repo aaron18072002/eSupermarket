@@ -1,0 +1,23 @@
+version: "3.8"
+
+services:
+  postgres-catalog:
+    image: postgres:16-alpine
+    container_name: esupermarket-postgres-catalog-1
+    restart: always
+    ports:
+      - "5435:5432"
+    environment:
+      POSTGRES_USER: application
+      POSTGRES_PASSWORD: "123456"
+      POSTGRES_DB: catalog_db
+    volumes:
+      - catalog_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U application -d catalog_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  catalog_pgdata:
