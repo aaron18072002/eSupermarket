@@ -3,14 +3,12 @@ package com.coding.api.gateway;
 import com.coding.api.gateway.util.JwtUtil;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import javax.crypto.SecretKey;
-import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.List;
 
@@ -18,18 +16,18 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class JwtUtilTest {
 
-    private static final String SECRET = "404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970";
+    private static final String SECRET = "liverpoolvodich123456";
     private JwtUtil jwtUtil;
     private SecretKey signingKey;
 
     @BeforeEach
     void setUp() {
         jwtUtil = new JwtUtil(SECRET);
-        signingKey = Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
+        signingKey = JwtUtil.deriveSigningKey(SECRET);
     }
 
     @Test
-    @DisplayName("Should extract userId and roles from valid JWT token")
+    @DisplayName("Should extract userId and roles from valid JWT token using liverpoolvodich123456")
     void shouldExtractClaimsFromValidToken() {
         String token = Jwts.builder()
                 .subject("user-uuid-12345")
@@ -63,7 +61,7 @@ class JwtUtilTest {
     @Test
     @DisplayName("Should reject token signed with different key (SignatureException)")
     void shouldRejectTamperedToken() {
-        SecretKey otherKey = Keys.hmacShaKeyFor("different-secret-key-that-is-at-least-256-bits-long-12345".getBytes(StandardCharsets.UTF_8));
+        SecretKey otherKey = JwtUtil.deriveSigningKey("manchesterunitedvodich123456");
         String forgedToken = Jwts.builder()
                 .subject("attacker")
                 .signWith(otherKey)

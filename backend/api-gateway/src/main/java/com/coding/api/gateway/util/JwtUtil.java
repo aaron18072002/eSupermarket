@@ -10,6 +10,8 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.List;
 
@@ -19,8 +21,22 @@ public class JwtUtil {
 
     private final SecretKey secretKey;
 
-    public JwtUtil(@Value("${application.jwt.secret:default-secret-key-eSupermarket-secret-key-must-be-at-least-256-bits-long-123456}") String secret) {
-        this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+    public JwtUtil(@Value("${application.jwt.secret}") String secret) {
+        this.secretKey = deriveSigningKey(secret);
+    }
+
+    /**
+     * Derives a deterministic 256-bit HMAC key from any input secret using SHA-256 hashing.
+     * This allows custom passphrase secrets of any length (e.g., 'liverpoolvodich123456') to satisfy HMAC-SHA256 requirements.
+     */
+    public static SecretKey deriveSigningKey(String secret) {
+        try {
+            MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
+            byte[] keyBytes = sha256.digest(secret.getBytes(StandardCharsets.UTF_8));
+            return Keys.hmacShaKeyFor(keyBytes);
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("SHA-256 algorithm not available", e);
+        }
     }
 
     /**

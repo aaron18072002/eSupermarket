@@ -46,8 +46,8 @@ spring:
 # Custom Application Properties
 application:
   jwt:
-    # 256-bit HMAC secret (can be overridden via JWT_SECRET environment variable)
-    secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+    # HMAC secret (can be overridden via JWT_SECRET environment variable)
+    secret: ${JWT_SECRET:liverpoolvodich123456}
 
 # Actuator Endpoints Configuration
 management:
