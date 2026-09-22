@@ -19,6 +19,7 @@ This project keeps frontend, backend microservices, and database infrastructure 
 ```text
 eSupermarket/
 ├── backend/                      # Java Spring Boot Microservices
+│   ├── api-gateway/              # Unified entry point, reverse proxy, CORS, and routing
 │   ├── catalog-service/          # Product, category, brand, supplier, and tag management
 │   └── inventory-service/        # Stock and location management
 ├── database/                     # Database infrastructure and migrations
@@ -28,6 +29,7 @@ eSupermarket/
 │       └── catalog/              # Catalog domain migrations (V1, V2, V3)
 ├── frontend/                     # Next.js web application
 ├── .gitignore                    # Global git ignore rules (Java & Node)
+├── FLOW.md                       # Visual end-to-end request flow & architecture guide
 └── README.md                     # Project documentation
 ```
 
@@ -41,8 +43,9 @@ eSupermarket/
 - **Styling & Formatting:** Tailwind CSS, Prettier
 
 **Backend (Spring Boot Microservices):**
-- **Framework:** Spring Boot (v4.0.8)
+- **Framework:** Spring Boot (v3.3.4 & v4.0.8)
 - **Language:** Java 17
+- **API Gateway:** Spring Cloud Gateway (v2023.0.3, Reactive / Netty)
 - **Database:** PostgreSQL 16 (via Spring Data JPA)
 - **Database Migration:** Flyway (v11.14.1)
 - **Communication:** Spring Cloud OpenFeign (v4.2.0)
@@ -92,10 +95,25 @@ All controllers and service interfaces adhere to strict prefix standards:
 
 ---
 
-### 2. Inventory Service (`backend/inventory-service`)
+### 2. API Gateway (`backend/api-gateway`)
+The **API Gateway** serves as the single entry point for all client applications (such as Next.js web storefront and mobile apps). It handles traffic routing, global CORS policies, centralized logging, and acts as the reverse proxy for internal microservices.
+
+- **Port:** `8080`
+- **Core Technology:** Spring Cloud Gateway (reactive Netty)
+- **Active Routes:**
+  - `/api/v1/products/**`, `/api/v1/categories/**`, `/api/v1/brands/**`, `/api/v1/suppliers/**`, `/api/v1/tags/**`, `/api/v1/product-groups/**` ➔ `catalog-service` (`:8081`)
+  - `/api/v1/auth/**`, `/api/v1/users/**` ➔ `user-service` (`:8082`, reserved)
+- **Features:**
+  - Global CORS pre-configured for `http://localhost:3000` (Next.js).
+  - Global reactive logging filter tracking method, path, status, and latency.
+  - Health and route inspection endpoints via Spring Boot Actuator (`/actuator/gateway/routes`).
+
+---
+
+### 3. Inventory Service (`backend/inventory-service`)
 Tracks physical warehouse/store stock across locations and handles reservations during checkout.
 
-### 3. Frontend Web App (`frontend/`)
+### 4. Frontend Web App (`frontend/`)
 Customer-facing web application built with Next.js App Router for browsing catalogs, searching products, and shopping cart operations.
 
 ---
@@ -117,4 +135,15 @@ Customer-facing web application built with Next.js App Router for browsing catal
    ```bash
    cd ../backend/catalog-service
    mvn spring-boot:run
+   ```
+
+4. **Run API Gateway:**
+   ```bash
+   cd ../backend/api-gateway
+   mvn spring-boot:run
+   ```
+
+5. **Verify Routing via Gateway:**
+   ```bash
+   curl http://localhost:8080/api/v1/products
    ```

@@ -6,10 +6,10 @@
 #   ./local-init-data.sh [domain] [mode]
 #
 # Examples:
-#   ./local-init-data.sh catalog          # Run all migrations (V1, V2, V3) for catalog_db
-#   ./local-init-data.sh catalog --schema # Run only schema migration (V1)
-#   ./local-init-data.sh catalog --seed   # Run only seed data (V2, V3)
-#   ./local-init-data.sh all              # Run all migrations for all available domains
+#   ./local-init-data.sh catalog          # Reset schema and run all migrations (V1, V2, V3) for catalog_db
+#   ./local-init-data.sh catalog --schema # Reset schema and run only schema migration (V1)
+#   ./local-init-data.sh catalog --seed   # Run only seed data (V2, V3) without resetting schema
+#   ./local-init-data.sh all              # Reset and run all migrations for all available domains
 # ==============================================================================
 
 set -euo pipefail
@@ -67,10 +67,26 @@ apply_sql_file() {
     fi
 
     log_info "Applying [${file_name}] to database [${database}]..."
-    if docker exec -i "${container}" psql -U "${user}" -d "${database}" < "${file_path}" > /dev/null 2>&1; then
+    if docker exec -i "${container}" psql -v ON_ERROR_STOP=1 -U "${user}" -d "${database}" < "${file_path}" > /dev/null; then
         log_success "Applied [${file_name}] successfully."
     else
         log_error "Failed to apply [${file_name}] to [${database}]"
+        return 1
+    fi
+}
+
+# Reset (drop & recreate) the public schema in a PostgreSQL database
+reset_schema() {
+    local container="$1"
+    local user="$2"
+    local database="$3"
+
+    log_warn "Resetting database [${database}] (dropping & recreating public schema)..."
+    if docker exec -i "${container}" psql -U "${user}" -d "${database}" -c \
+        "DROP SCHEMA IF EXISTS public CASCADE; CREATE SCHEMA public; GRANT ALL ON SCHEMA public TO ${user};" > /dev/null 2>&1; then
+        log_success "Database [${database}] schema reset successfully."
+    else
+        log_error "Failed to reset database [${database}] schema."
         return 1
     fi
 }
@@ -88,6 +104,7 @@ seed_catalog() {
 
     case "${mode}" in
         --schema)
+            reset_schema "${container}" "${user}" "${database}"
             apply_sql_file "${container}" "${user}" "${database}" "${domain_dir}/V1__init_catalog_schema.sql"
             ;;
         --seed)
@@ -95,6 +112,7 @@ seed_catalog() {
             apply_sql_file "${container}" "${user}" "${database}" "${domain_dir}/V3__seed_sample_products.sql"
             ;;
         all|"")
+            reset_schema "${container}" "${user}" "${database}"
             apply_sql_file "${container}" "${user}" "${database}" "${domain_dir}/V1__init_catalog_schema.sql"
             apply_sql_file "${container}" "${user}" "${database}" "${domain_dir}/V2__seed_reference_data.sql"
             apply_sql_file "${container}" "${user}" "${database}" "${domain_dir}/V3__seed_sample_products.sql"
@@ -142,9 +160,9 @@ usage() {
     echo "  all           Manage all available domains"
     echo ""
     echo "Modes (optional):"
-    echo "  --schema      Apply only schema migrations (V1)"
-    echo "  --seed        Apply only seed data (V2, V3)"
-    echo "  (none)        Apply all migrations (V1, V2, V3)"
+    echo "  --schema      Reset schema and apply only schema migrations (V1)"
+    echo "  --seed        Apply only seed data (V2, V3) without resetting"
+    echo "  (none)        Reset schema and apply all migrations (V1, V2, V3)"
     echo ""
     echo "Examples:"
     echo "  $0 catalog"

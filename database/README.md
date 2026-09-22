@@ -119,7 +119,43 @@ You can use **DBeaver** (or any database GUI like pgAdmin or DataGrip) to connec
 
 After running `./local-init-data.sh catalog`, open a new SQL editor in DBeaver and run these verification queries:
 
-#### A. Check Record Counts Across All Tables
+#### A. Master Catalog View (Connects All Catalog Information in 1 Query)
+> **Tip:** You can also open [`test-catalog-queries.sql`](file:///D:/fe/eSupermarket/database/test-catalog-queries.sql) directly in DBeaver!
+
+```sql
+SELECT 
+    p.id AS product_id,
+    p.sku,
+    p.barcode,
+    p.name AS product_name,
+    p.price,
+    CONCAT(p.package_size, ' ', p.unit_of_measure) AS package,
+    COALESCE(parent_cat.name || ' > ', '') || cat.name AS category_path,
+    b.name AS brand,
+    b.country AS brand_origin,
+    s.name AS supplier,
+    COALESCE(pg.name, 'None') AS product_group,
+    COALESCE(STRING_AGG(DISTINCT t.name, ', '), 'None') AS tags,
+    COALESCE(STRING_AGG(DISTINCT pa.attr_key || ': ' || pa.attr_value, ' | '), 'None') AS attributes,
+    COALESCE(STRING_AGG(DISTINCT pi.image_url, ', '), 'None') AS images,
+    p.created_at
+FROM PRODUCTS p
+LEFT JOIN CATEGORIES cat ON p.category_id = cat.id
+LEFT JOIN CATEGORIES parent_cat ON cat.parent_id = parent_cat.id
+LEFT JOIN BRANDS b ON p.brand_id = b.id
+LEFT JOIN SUPPLIERS s ON p.supplier_id = s.id
+LEFT JOIN PRODUCT_GROUPS pg ON p.group_id = pg.id
+LEFT JOIN PRODUCT_TAGS pt ON p.id = pt.product_id
+LEFT JOIN TAGS t ON pt.tag_id = t.id
+LEFT JOIN PRODUCT_ATTRIBUTES pa ON p.id = pa.product_id
+LEFT JOIN PRODUCT_IMAGES pi ON p.id = pi.product_id
+GROUP BY 
+    p.id, p.sku, p.barcode, p.name, p.price, p.package_size, p.unit_of_measure,
+    cat.name, parent_cat.name, b.name, b.country, s.name, pg.name, p.created_at
+ORDER BY p.sku;
+```
+
+#### B. Check Record Counts Across All Tables
 ```sql
 SELECT 'BRANDS' AS table_name, count(*) AS total FROM BRANDS
 UNION ALL
