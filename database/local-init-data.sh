@@ -146,6 +146,43 @@ seed_inventory() {
     log_success "Inventory domain completed successfully!"
 }
 
+# Seed User Domain
+seed_user() {
+    local mode="${1:-all}"
+    local container="esupermarket-postgres-catalog-1"
+    local user="application"
+    local database="user_db"
+    local domain_dir="${MIGRATIONS_DIR}/user"
+
+    log_info "Starting database setup for domain: [USER] (mode: ${mode})"
+    check_container "${container}"
+
+    # Ensure database exists
+    docker exec -i "${container}" psql -U "${user}" -d postgres -tc "SELECT 1 FROM pg_database WHERE datname='${database}'" | grep -q 1 || \
+        docker exec -i "${container}" psql -U "${user}" -d postgres -c "CREATE DATABASE ${database};"
+
+    case "${mode}" in
+        --schema)
+            reset_schema "${container}" "${user}" "${database}"
+            apply_sql_file "${container}" "${user}" "${database}" "${domain_dir}/V1__init_user_schema.sql"
+            ;;
+        --seed)
+            apply_sql_file "${container}" "${user}" "${database}" "${domain_dir}/V2__seed_admin_user.sql"
+            ;;
+        all|"")
+            reset_schema "${container}" "${user}" "${database}"
+            apply_sql_file "${container}" "${user}" "${database}" "${domain_dir}/V1__init_user_schema.sql"
+            apply_sql_file "${container}" "${user}" "${database}" "${domain_dir}/V2__seed_admin_user.sql"
+            ;;
+        *)
+            log_error "Unknown mode '${mode}'. Use --schema, --seed, or omit for all."
+            return 1
+            ;;
+    esac
+
+    log_success "User domain completed successfully!"
+}
+
 # Display help/usage
 usage() {
     echo "================================================================="
@@ -156,6 +193,7 @@ usage() {
     echo ""
     echo "Available Domains:"
     echo "  catalog       Manage catalog_db"
+    echo "  user          Manage user_db"
     echo "  inventory     Manage inventory_db (future)"
     echo "  all           Manage all available domains"
     echo ""
@@ -166,7 +204,7 @@ usage() {
     echo ""
     echo "Examples:"
     echo "  $0 catalog"
-    echo "  $0 catalog --seed"
+    echo "  $0 user"
     echo "  $0 all"
     echo "================================================================="
 }
@@ -185,11 +223,15 @@ main() {
         catalog)
             seed_catalog "${mode}"
             ;;
+        user)
+            seed_user "${mode}"
+            ;;
         inventory)
             seed_inventory "${mode}"
             ;;
         all)
             seed_catalog "${mode}"
+            seed_user "${mode}"
             seed_inventory "${mode}"
             ;;
         *)

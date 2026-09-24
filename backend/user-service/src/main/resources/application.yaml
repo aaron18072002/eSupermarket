@@ -1,0 +1,35 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: user-service
+
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5435/user_db}
+    username: ${DATABASE_USERNAME:application}
+    password: ${DATABASE_PASSWORD:123456}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+application:
+  jwt:
+    # Matches API Gateway secret key
+    secret: ${JWT_SECRET:liverpoolvodich123456}
+    # 24 hours in milliseconds (86,400,000 ms)
+    access-token-expiration-ms: 86400000
+    # 7 days in milliseconds (604,800,000 ms)
+    refresh-token-expiration-ms: 604800000
+
+logging:
+  level:
+    root: INFO
+    com.coding: DEBUG

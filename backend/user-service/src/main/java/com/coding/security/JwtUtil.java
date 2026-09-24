@@ -1,9 +1,11 @@
-package com.coding.api.gateway.util;
+package com.coding.security;
 
+import com.coding.model.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -14,6 +16,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @Component
@@ -21,13 +24,25 @@ public class JwtUtil {
 
     private final SecretKey secretKey;
 
-    public JwtUtil(@Value("${application.jwt.secret}") String secret) {
+    @Getter
+    private final long accessTokenExpirationMs;
+
+    @Getter
+    private final long refreshTokenExpirationMs;
+
+    public JwtUtil(
+            @Value("${application.jwt.secret}") String secret,
+            @Value("${application.jwt.access-token-expiration-ms:86400000}") long accessTokenExpirationMs,
+            @Value("${application.jwt.refresh-token-expiration-ms:604800000}") long refreshTokenExpirationMs
+    ) {
         this.secretKey = deriveSigningKey(secret);
+        this.accessTokenExpirationMs = accessTokenExpirationMs;
+        this.refreshTokenExpirationMs = refreshTokenExpirationMs;
     }
 
     /**
-     * Derives a deterministic 256-bit HMAC key from any input secret using SHA-256 hashing.
-     * This allows custom passphrase secrets of any length to satisfy HMAC-SHA256 requirements.
+     * Derives a deterministic 256-bit HMAC key from any input secret using SHA-256.
+     * Matches the derivation algorithm used by API Gateway.
      */
     public static SecretKey deriveSigningKey(String secret) {
         try {
@@ -40,8 +55,30 @@ public class JwtUtil {
     }
 
     /**
+     * Generates a signed JWT access token for an authenticated user.
+     */
+    public String generateAccessToken(User user) {
+        long now = System.currentTimeMillis();
+        return Jwts.builder()
+                .subject(user.getId().toString())
+                .claim("email", user.getEmail())
+                .claim("fullName", user.getFullName())
+                .claim("roles", user.getRoles())
+                .issuedAt(new Date(now))
+                .expiration(new Date(now + accessTokenExpirationMs))
+                .signWith(secretKey)
+                .compact();
+    }
+
+    /**
+     * Generates a random secure UUID string for refresh tokens.
+     */
+    public String generateRefreshTokenString() {
+        return UUID.randomUUID().toString().replace("-", "") + UUID.randomUUID().toString().replace("-", "");
+    }
+
+    /**
      * Parses and verifies signature & claims of a signed JWT token.
-     * Throws JwtException subclasses (ExpiredJwtException, MalformedJwtException, etc.) if invalid.
      */
     public Claims extractAllClaims(String token) {
         return Jwts.parser()
@@ -52,43 +89,14 @@ public class JwtUtil {
     }
 
     /**
-     * Extracts the subject (User ID / username) from the token.
+     * Extracts user ID from token subject.
      */
     public String extractUserId(String token) {
         return extractAllClaims(token).getSubject();
     }
 
     /**
-     * Extracts user roles claim as a comma-separated string.
-     */
-    public String extractRoles(String token) {
-        Claims claims = extractAllClaims(token);
-        Object rolesObj = claims.get("roles");
-        if (rolesObj == null) {
-            rolesObj = claims.get("role");
-        }
-
-        if (rolesObj instanceof List<?>) {
-            return String.join(",", ((List<?>) rolesObj).stream().map(Object::toString).toList());
-        } else if (rolesObj != null) {
-            return rolesObj.toString();
-        }
-        return "";
-    }
-
-    /**
-     * Checks if the token has expired.
-     */
-    public boolean isTokenExpired(String token) {
-        try {
-            return extractAllClaims(token).getExpiration().before(new Date());
-        } catch (JwtException e) {
-            return true;
-        }
-    }
-
-    /**
-     * Validates if the token signature is authentic and token is not expired.
+     * Validates whether token signature is authentic and not expired.
      */
     public boolean validateToken(String token) {
         try {
@@ -99,4 +107,5 @@ public class JwtUtil {
             return false;
         }
     }
+
 }
