@@ -15,7 +15,9 @@ public class RouterValidator {
             "/api/v1/auth/register",
             "/api/v1/auth/login",
             "/api/v1/auth/refresh-token",
-            "/actuator"
+            "/actuator",
+            "/v3/api-docs",
+            "/swagger-ui"
     );
 
     // Endpoints that are public ONLY for HTTP GET (storefront catalog browsing)

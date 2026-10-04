@@ -5,6 +5,8 @@ import com.coding.dto.request.UpdateBrandRequest;
 import com.coding.dto.response.ApiResponse;
 import com.coding.dto.response.BrandResponse;
 import com.coding.service.IBrandService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.UUID;
 
+@Tag(name = "Brand", description = "Endpoints for product brand management")
 @RestController
 @RequestMapping("/api/v1/brands")
 @RequiredArgsConstructor
@@ -28,6 +31,7 @@ public class BrandController {
 
     private final IBrandService brandService;
 
+    @Operation(summary = "Create a new brand")
     @PostMapping
     public ResponseEntity<ApiResponse<BrandResponse>> createBrand(
             @Valid @RequestBody CreateBrandRequest request) {
@@ -41,6 +45,7 @@ public class BrandController {
         );
     }
 
+    @Operation(summary = "Get brand by ID")
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<BrandResponse>> readBrandById(
             @PathVariable UUID id) {
@@ -54,6 +59,7 @@ public class BrandController {
         );
     }
 
+    @Operation(summary = "Get all brands")
     @GetMapping
     public ResponseEntity<ApiResponse<List<BrandResponse>>> readAllBrands() {
         List<BrandResponse> response = this.brandService.readAllBrands();
@@ -66,6 +72,7 @@ public class BrandController {
         );
     }
 
+    @Operation(summary = "Update brand by ID")
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<BrandResponse>> updateBrand(
             @PathVariable UUID id,
@@ -80,6 +87,7 @@ public class BrandController {
         );
     }
 
+    @Operation(summary = "Delete brand by ID")
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteBrandById(
             @PathVariable UUID id) {

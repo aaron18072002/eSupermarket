@@ -1,12 +1,12 @@
 -- V2__seed_admin_user.sql
 -- Native PostgreSQL pgcrypto crypt with Blowfish (BCrypt)
 
--- 1. Seed Admin User (Password: admin123456)
+-- 1. Seed Admin User (Password: Admin@123456)
 INSERT INTO users (id, email, password, full_name, phone, address, status)
 VALUES (
     '00000000-0000-0000-0000-000000000001',
     'admin@esupermarket.com',
-    crypt('admin123456', gen_salt('bf', 10)),
+    crypt('Admin@123456', gen_salt('bf', 10)),
     'System Administrator',
     '+84901234567',
     'Central Operations, Tech Park',
@@ -20,12 +20,12 @@ VALUES
     ('00000000-0000-0000-0000-000000000001', 'ROLE_CUSTOMER')
 ON CONFLICT (user_id, role) DO NOTHING;
 
--- 2. Seed Sample Customer (Password: customer123456)
+-- 2. Seed Sample Customer (Password: Customer@123456)
 INSERT INTO users (id, email, password, full_name, phone, address, status)
 VALUES (
     '00000000-0000-0000-0000-000000000002',
     'customer@esupermarket.com',
-    crypt('customer123456', gen_salt('bf', 10)),
+    crypt('Customer@123456', gen_salt('bf', 10)),
     'Jane Customer',
     '+84909876543',
     '456 Market Street, District 1',

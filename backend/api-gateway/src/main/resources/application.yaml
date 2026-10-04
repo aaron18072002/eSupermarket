@@ -13,15 +13,15 @@ spring:
         # Catalog Service Routes
         # -------------------------------------------------------------
         - id: catalog-service
-          uri: ${CATALOG_SERVICE_URL:http://localhost:8081}
+          uri: ${CATALOG_SERVICE_URL:lb://catalog-service}
           predicates:
             - Path=/api/v1/products/**, /api/v1/categories/**, /api/v1/brands/**, /api/v1/suppliers/**, /api/v1/tags/**, /api/v1/product-groups/**
 
         # -------------------------------------------------------------
-        # User / Auth Service Routes (Reserved for next step)
+        # User / Auth Service Routes
         # -------------------------------------------------------------
         - id: user-service
-          uri: ${USER_SERVICE_URL:http://localhost:8082}
+          uri: ${USER_SERVICE_URL:lb://user-service}
           predicates:
             - Path=/api/v1/auth/**, /api/v1/users/**
 
@@ -60,6 +60,14 @@ management:
       show-details: always
     gateway:
       enabled: true
+
+# Eureka Client Configuration
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka/}
+  instance:
+    prefer-ip-address: true
 
 # Logging Configuration
 logging:

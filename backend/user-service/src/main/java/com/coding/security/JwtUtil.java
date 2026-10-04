@@ -74,7 +74,8 @@ public class JwtUtil {
      * Generates a random secure UUID string for refresh tokens.
      */
     public String generateRefreshTokenString() {
-        return UUID.randomUUID().toString().replace("-", "") + UUID.randomUUID().toString().replace("-", "");
+        return UUID.randomUUID().toString().replace("-", "")
+                + UUID.randomUUID().toString().replace("-", "");
     }
 
     /**

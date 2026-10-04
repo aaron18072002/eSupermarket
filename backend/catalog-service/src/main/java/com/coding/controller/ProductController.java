@@ -5,6 +5,8 @@ import com.coding.dto.request.UpdateProductRequest;
 import com.coding.dto.response.ApiResponse;
 import com.coding.dto.response.ProductResponse;
 import com.coding.service.IProductService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -22,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.UUID;
 
+@Tag(name = "Product", description = "Endpoints for managing product catalog, attributes, and search")
 @RestController
 @RequestMapping("/api/v1/products")
 @RequiredArgsConstructor
@@ -29,6 +32,7 @@ public class ProductController {
 
     private final IProductService productService;
 
+    @Operation(summary = "Create a new product")
     @PostMapping
     public ResponseEntity<ApiResponse<ProductResponse>> createProduct(
             @Valid @RequestBody CreateProductRequest request) {
@@ -42,6 +46,7 @@ public class ProductController {
         );
     }
 
+    @Operation(summary = "Get product by ID")
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<ProductResponse>> readProductById(
             @PathVariable UUID id) {
@@ -55,6 +60,7 @@ public class ProductController {
         );
     }
 
+    @Operation(summary = "Get product by SKU")
     @GetMapping("/sku/{sku}")
     public ResponseEntity<ApiResponse<ProductResponse>> readProductBySku(
             @PathVariable String sku) {
@@ -68,6 +74,7 @@ public class ProductController {
         );
     }
 
+    @Operation(summary = "Get product by barcode")
     @GetMapping("/barcode/{barcode}")
     public ResponseEntity<ApiResponse<ProductResponse>> readProductByBarcode(
             @PathVariable String barcode) {
@@ -81,6 +88,7 @@ public class ProductController {
         );
     }
 
+    @Operation(summary = "Get all products")
     @GetMapping
     public ResponseEntity<ApiResponse<List<ProductResponse>>> readAllProducts() {
         List<ProductResponse> response = this.productService.readAllProducts();
@@ -93,6 +101,7 @@ public class ProductController {
         );
     }
 
+    @Operation(summary = "Get products by category ID")
     @GetMapping("/category/{categoryId}")
     public ResponseEntity<ApiResponse<List<ProductResponse>>> readProductsByCategory(
             @PathVariable UUID categoryId) {
@@ -106,6 +115,7 @@ public class ProductController {
         );
     }
 
+    @Operation(summary = "Get products by brand ID")
     @GetMapping("/brand/{brandId}")
     public ResponseEntity<ApiResponse<List<ProductResponse>>> readProductsByBrand(
             @PathVariable UUID brandId) {
@@ -119,6 +129,7 @@ public class ProductController {
         );
     }
 
+    @Operation(summary = "Search products by query string")
     @GetMapping("/search")
     public ResponseEntity<ApiResponse<List<ProductResponse>>> searchProducts(
             @RequestParam String query) {
@@ -132,6 +143,7 @@ public class ProductController {
         );
     }
 
+    @Operation(summary = "Update product by ID")
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<ProductResponse>> updateProduct(
             @PathVariable UUID id,
@@ -146,6 +158,7 @@ public class ProductController {
         );
     }
 
+    @Operation(summary = "Delete product by ID")
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteProductById(
             @PathVariable UUID id) {

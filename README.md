@@ -20,13 +20,16 @@ This project keeps frontend, backend microservices, and database infrastructure 
 eSupermarket/
 ├── backend/                      # Java Spring Boot Microservices
 │   ├── api-gateway/              # Unified entry point, reverse proxy, CORS, and routing
+│   ├── eureka-server/            # Netflix Eureka Service Registry & Discovery
 │   ├── catalog-service/          # Product, category, brand, supplier, and tag management
-│   └── inventory-service/        # Stock and location management
+│   ├── inventory-service/        # Stock and location management
+│   └── user-service/             # Authentication, user profiles, and JWT tokens
 ├── database/                     # Database infrastructure and migrations
 │   ├── docker-compose.yml        # PostgreSQL 16 container setup
 │   ├── README.md                 # Database and multi-domain migration instructions
 │   └── migrations/               # Domain-partitioned Flyway migration scripts
-│       └── catalog/              # Catalog domain migrations (V1, V2, V3)
+│       ├── catalog/              # Catalog domain migrations (V1, V2, V3)
+│       └── user/                 # User domain migrations (V1, V2)
 ├── frontend/                     # Next.js web application
 ├── .gitignore                    # Global git ignore rules (Java & Node)
 ├── FLOW.md                       # Visual end-to-end request flow & architecture guide
@@ -100,20 +103,32 @@ The **API Gateway** serves as the single entry point for all client applications
 
 - **Port:** `8080`
 - **Core Technology:** Spring Cloud Gateway (reactive Netty)
-- **Active Routes:**
-  - `/api/v1/products/**`, `/api/v1/categories/**`, `/api/v1/brands/**`, `/api/v1/suppliers/**`, `/api/v1/tags/**`, `/api/v1/product-groups/**` ➔ `catalog-service` (`:8081`)
-  - `/api/v1/auth/**`, `/api/v1/users/**` ➔ `user-service` (`:8082`, reserved)
+- **Active Routes (Dynamic Load Balancing via Eureka):**
+  - `/api/v1/products/**`, `/api/v1/categories/**`, `/api/v1/brands/**`, etc. ➔ `lb://catalog-service`
+  - `/api/v1/auth/**`, `/api/v1/users/**` ➔ `lb://user-service`
 - **Features:**
+  - Dynamic service discovery and client-side load balancing via Netflix Eureka.
+  - Pure reverse proxy and routing without request header mutation.
+  - Stateless edge JWT verification (validates signature and expiration, rejects invalid tokens with 401 early).
   - Global CORS pre-configured for `http://localhost:3000` (Next.js).
   - Global reactive logging filter tracking method, path, status, and latency.
   - Health and route inspection endpoints via Spring Boot Actuator (`/actuator/gateway/routes`).
 
 ---
 
-### 3. Inventory Service (`backend/inventory-service`)
+### 3. Eureka Server (`backend/eureka-server`)
+Central Service Registry and Discovery server for the polyglot microservices platform. Microservices self-register on startup and send periodic heartbeats to maintain active routing tables.
+
+- **Port:** `8761`
+- **Dashboard:** `http://localhost:8761`
+- **Core Technology:** Spring Cloud Netflix Eureka Server
+
+---
+
+### 4. Inventory Service (`backend/inventory-service`)
 Tracks physical warehouse/store stock across locations and handles reservations during checkout.
 
-### 4. Frontend Web App (`frontend/`)
+### 5. Frontend Web App (`frontend/`)
 Customer-facing web application built with Next.js App Router for browsing catalogs, searching products, and shopping cart operations.
 
 ---

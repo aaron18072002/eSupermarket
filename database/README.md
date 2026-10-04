@@ -16,6 +16,9 @@ database/
     │   ├── V1__init_catalog_schema.sql    # DDL: Tables, constraints, and indexes
     │   ├── V2__seed_reference_data.sql    # Seed: Categories, Brands, Suppliers, Tags, Groups
     │   └── V3__seed_sample_products.sql   # Seed: Sample Products, Attributes, Tags, Images
+    ├── user/                   # User Domain (user_db)
+    │   ├── V1__init_user_schema.sql       # DDL: Users, roles, refresh tokens
+    │   └── V2__seed_admin_user.sql        # Seed: Default admin and user accounts
     ├── inventory/              # (Future) Inventory Domain (inventory_db)
     │   └── ...
     └── order/                  # (Future) Order Domain (order_db)
@@ -29,7 +32,9 @@ database/
 | Domain | Database | Port (Host) | Default User | Default Password | JDBC URL |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **Catalog** | `catalog_db` | `5435` | `application` | `123456` | `jdbc:postgresql://localhost:5435/catalog_db` |
-| **Inventory** *(Planned)* | `inventory_db` | TBD | `application` | `123456` | `jdbc:postgresql://localhost:5435/inventory_db` |
+| **User** | `user_db` | `5436` | `application` | `123456` | `jdbc:postgresql://localhost:5436/user_db` |
+| **Inventory** *(Planned)* | `inventory_db` | TBD | `application` | `123456` | `jdbc:postgresql://localhost:5437/inventory_db` |
+
 
 ---
 
@@ -59,19 +64,24 @@ docker compose ps
 Run the script to initialize tables and seed data for the desired domain:
 
 ```bash
-# 1. Initialize schema and seed data (V1 + V2 + V3) for catalog_db
+# 1. Fresh rebuild (reset schema and run all V1, V2, V3... migrations in order)
 ./local-init-data.sh catalog
+./local-init-data.sh user
 
-# 2. Apply only seed data (V2 + V3) to an existing database
+# 2. Safe update: apply new updated tables/columns WITHOUT wiping existing data
+./local-init-data.sh user --update
+./local-init-data.sh catalog --update
+
+# 3. Apply only seed data to an existing database
 ./local-init-data.sh catalog --seed
 
-# 3. Apply only schema DDL (V1)
+# 4. Apply only schema DDL files
 ./local-init-data.sh catalog --schema
 
-# 4. Initialize all available domains at once
+# 5. Initialize all available domains at once
 ./local-init-data.sh all
 
-# 5. Display help and available options
+# 6. Display help and available options
 ./local-init-data.sh --help
 ```
 

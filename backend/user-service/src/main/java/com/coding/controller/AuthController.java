@@ -7,6 +7,8 @@ import com.coding.dto.response.ApiResponse;
 import com.coding.dto.response.AuthResponse;
 import com.coding.dto.response.TokenRefreshResponse;
 import com.coding.service.IAuthService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Tag(name = "Authentication", description = "Endpoints for user registration, login, token refresh, and logout")
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
@@ -23,6 +26,7 @@ public class AuthController {
 
     private final IAuthService authService;
 
+    @Operation(summary = "Register a new user account")
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<AuthResponse>> register(@Valid @RequestBody RegisterRequest request) {
         AuthResponse response = this.authService.register(request);
@@ -35,6 +39,7 @@ public class AuthController {
         );
     }
 
+    @Operation(summary = "Log in with email and password")
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<AuthResponse>> login(@Valid @RequestBody LoginRequest request) {
         AuthResponse response = this.authService.login(request);
@@ -47,6 +52,7 @@ public class AuthController {
         );
     }
 
+    @Operation(summary = "Refresh access token using refresh token")
     @PostMapping("/refresh-token")
     public ResponseEntity<ApiResponse<TokenRefreshResponse>> refreshToken(
             @Valid @RequestBody RefreshTokenRequest request) {
@@ -60,6 +66,7 @@ public class AuthController {
         );
     }
 
+    @Operation(summary = "Log out user and revoke refresh token")
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<Void>> logout(@RequestBody(required = false) RefreshTokenRequest request) {
         if (request != null && request.getRefreshToken() != null) {

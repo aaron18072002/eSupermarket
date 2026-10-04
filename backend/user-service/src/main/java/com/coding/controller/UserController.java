@@ -5,6 +5,8 @@ import com.coding.dto.request.UpdateUserRequest;
 import com.coding.dto.response.ApiResponse;
 import com.coding.dto.response.UserResponse;
 import com.coding.service.IUserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.UUID;
 
+@Tag(name = "User Management", description = "Endpoints for user profile retrieval, user updates, and password changes")
 @RestController
 @RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
@@ -28,6 +31,7 @@ public class UserController {
 
     private final IUserService userService;
 
+    @Operation(summary = "Get current authenticated user profile")
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<UserResponse>> readCurrentUser(
             @RequestHeader(value = "X-User-Id", required = false) String userIdHeader) {
@@ -45,6 +49,7 @@ public class UserController {
         );
     }
 
+    @Operation(summary = "Get user profile by ID")
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<UserResponse>> readUserById(@PathVariable UUID id) {
         UserResponse response = this.userService.readUserById(id);
@@ -57,6 +62,7 @@ public class UserController {
         );
     }
 
+    @Operation(summary = "Get all users (Admin)")
     @GetMapping
     public ResponseEntity<ApiResponse<List<UserResponse>>> readAllUsers() {
         List<UserResponse> response = this.userService.readAllUsers();
@@ -69,6 +75,7 @@ public class UserController {
         );
     }
 
+    @Operation(summary = "Update user profile details")
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<UserResponse>> updateUser(
             @PathVariable UUID id,
@@ -83,6 +90,7 @@ public class UserController {
         );
     }
 
+    @Operation(summary = "Change user password")
     @PutMapping("/{id}/change-password")
     public ResponseEntity<ApiResponse<Void>> changePassword(
             @PathVariable UUID id,
@@ -96,6 +104,7 @@ public class UserController {
         );
     }
 
+    @Operation(summary = "Delete user by ID (Admin)")
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteUserById(@PathVariable UUID id) {
         this.userService.deleteUserById(id);

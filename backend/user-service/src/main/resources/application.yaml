@@ -6,7 +6,7 @@ spring:
     name: user-service
 
   datasource:
-    url: ${DATABASE_URL:jdbc:postgresql://localhost:5435/user_db}
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5436/user_db}
     username: ${DATABASE_USERNAME:application}
     password: ${DATABASE_PASSWORD:123456}
     driver-class-name: org.postgresql.Driver
@@ -29,7 +29,22 @@ application:
     # 7 days in milliseconds (604,800,000 ms)
     refresh-token-expiration-ms: 604800000
 
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka/}
+  instance:
+    prefer-ip-address: true
+
 logging:
   level:
     root: INFO
     com.coding: DEBUG
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+    tagsSorter: alpha

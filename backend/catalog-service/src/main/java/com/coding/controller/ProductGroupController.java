@@ -5,6 +5,8 @@ import com.coding.dto.request.UpdateProductGroupRequest;
 import com.coding.dto.response.ApiResponse;
 import com.coding.dto.response.ProductGroupResponse;
 import com.coding.service.IProductGroupService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.UUID;
 
+@Tag(name = "Product Group", description = "Endpoints for managing grouped and bundled products")
 @RestController
 @RequestMapping("/api/v1/product-groups")
 @RequiredArgsConstructor
@@ -28,6 +31,7 @@ public class ProductGroupController {
 
     private final IProductGroupService productGroupService;
 
+    @Operation(summary = "Create a new product group")
     @PostMapping
     public ResponseEntity<ApiResponse<ProductGroupResponse>> createProductGroup(
             @Valid @RequestBody CreateProductGroupRequest request) {
@@ -41,6 +45,7 @@ public class ProductGroupController {
         );
     }
 
+    @Operation(summary = "Get product group by ID")
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<ProductGroupResponse>> readProductGroupById(
             @PathVariable UUID id) {
@@ -54,6 +59,7 @@ public class ProductGroupController {
         );
     }
 
+    @Operation(summary = "Get all product groups")
     @GetMapping
     public ResponseEntity<ApiResponse<List<ProductGroupResponse>>> readAllProductGroups() {
         List<ProductGroupResponse> response = this.productGroupService.readAllProductGroups();
@@ -66,6 +72,7 @@ public class ProductGroupController {
         );
     }
 
+    @Operation(summary = "Update product group by ID")
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<ProductGroupResponse>> updateProductGroup(
             @PathVariable UUID id,
@@ -80,6 +87,7 @@ public class ProductGroupController {
         );
     }
 
+    @Operation(summary = "Delete product group by ID")
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteProductGroupById(
             @PathVariable UUID id) {

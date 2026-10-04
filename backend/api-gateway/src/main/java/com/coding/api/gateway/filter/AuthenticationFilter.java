@@ -2,7 +2,6 @@ package com.coding.api.gateway.filter;
 
 import com.coding.api.gateway.util.JwtUtil;
 import com.coding.api.gateway.validator.RouterValidator;
-import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.UnsupportedJwtException;
@@ -49,25 +48,21 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
 
         String authHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return onError(exchange, "Invalid Authorization Header format. Expected 'Bearer <token>'", HttpStatus.UNAUTHORIZED);
+            return onError(exchange,
+                    "Invalid Authorization Header format. Expected 'Bearer <token>'",
+                    HttpStatus.UNAUTHORIZED);
         }
 
-        // Extract and parse JWT token
+        // Extract and validate JWT token
         String token = authHeader.substring(7);
         try {
-            Claims claims = jwtUtil.extractAllClaims(token);
-            String userId = claims.getSubject();
-            String roles = jwtUtil.extractRoles(token);
+            // Validate JWT signature and expiration without mutating the request
+            jwtUtil.extractAllClaims(token);
 
-            // 4. Inject clean user context headers downstream to internal services
-            ServerHttpRequest mutatedRequest = exchange.getRequest().mutate()
-                    .header("X-User-Id", userId != null ? userId : "")
-                    .header("X-User-Roles", roles != null ? roles : "")
-                    .build();
+            log.debug("Validated JWT token successfully for path: {}", request.getURI().getPath());
 
-            log.debug("Authenticated request for user: {} with roles: {} on path: {}", userId, roles, request.getURI().getPath());
-
-            return chain.filter(exchange.mutate().request(mutatedRequest).build());
+            // Forward the original request without any header mutation
+            return chain.filter(exchange);
 
         } catch (ExpiredJwtException e) {
             log.warn("JWT Token expired for request to {}: {}", request.getURI().getPath(), e.getMessage());

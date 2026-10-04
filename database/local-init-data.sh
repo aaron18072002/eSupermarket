@@ -91,96 +91,99 @@ reset_schema() {
     fi
 }
 
-# Seed Catalog Domain
-seed_catalog() {
-    local mode="${1:-all}"
-    local container="esupermarket-postgres-catalog-1"
+# Generic migration executor for any domain
+execute_domain_migrations() {
+    local domain_name="$1"
+    local container="$2"
+    local database="$3"
+    local mode="${4:-all}"
     local user="application"
-    local database="catalog_db"
-    local domain_dir="${MIGRATIONS_DIR}/catalog"
+    local domain_dir="${MIGRATIONS_DIR}/${domain_name}"
 
-    log_info "Starting database setup for domain: [CATALOG] (mode: ${mode})"
+    if [ ! -d "${domain_dir}" ]; then
+        log_warn "Migrations directory not found at '${domain_dir}'. Skipping domain [${domain_name}]."
+        return 0
+    fi
+
+    log_info "Starting database setup for domain: [${domain_name^^}] (mode: ${mode})"
     check_container "${container}"
 
+    # Handle schema reset according to mode
     case "${mode}" in
-        --schema)
-            reset_schema "${container}" "${user}" "${database}"
-            apply_sql_file "${container}" "${user}" "${database}" "${domain_dir}/V1__init_catalog_schema.sql"
-            ;;
-        --seed)
-            apply_sql_file "${container}" "${user}" "${database}" "${domain_dir}/V2__seed_reference_data.sql"
-            apply_sql_file "${container}" "${user}" "${database}" "${domain_dir}/V3__seed_sample_products.sql"
-            ;;
         all|"")
             reset_schema "${container}" "${user}" "${database}"
-            apply_sql_file "${container}" "${user}" "${database}" "${domain_dir}/V1__init_catalog_schema.sql"
-            apply_sql_file "${container}" "${user}" "${database}" "${domain_dir}/V2__seed_reference_data.sql"
-            apply_sql_file "${container}" "${user}" "${database}" "${domain_dir}/V3__seed_sample_products.sql"
+            ;;
+        --update|--migrate)
+            log_info "Running in UPDATE/MIGRATE mode (preserving existing data and applying migrations)..."
+            ;;
+        --schema)
+            reset_schema "${container}" "${user}" "${database}"
+            ;;
+        --seed)
+            log_info "Running in SEED mode (preserving existing schema)..."
             ;;
         *)
-            log_error "Unknown mode '${mode}'. Use --schema, --seed, or omit for all."
+            log_error "Unknown mode '${mode}'. Use --update, --schema, --seed, or omit for all."
             return 1
             ;;
     esac
 
-    log_success "Catalog domain completed successfully!"
-}
+    # Discover and sort all migration files naturally (V1, V2, ... V10)
+    local sql_files=()
+    while IFS= read -r file; do
+        [ -n "${file}" ] && sql_files+=("${file}")
+    done < <(ls -1v "${domain_dir}"/V*__*.sql 2>/dev/null || true)
 
-# Seed Inventory Domain (Placeholder for future)
-seed_inventory() {
-    local mode="${1:-all}"
-    local container="esupermarket-postgres-inventory-1"
-    local user="application"
-    local database="inventory_db"
-    local domain_dir="${MIGRATIONS_DIR}/inventory"
-
-    if [ ! -d "${domain_dir}" ]; then
-        log_warn "Inventory migrations directory not found at '${domain_dir}'. Skipping inventory domain."
+    if [ ${#sql_files[@]} -eq 0 ]; then
+        log_warn "No migration files found in '${domain_dir}'."
         return 0
     fi
 
-    log_info "Starting database setup for domain: [INVENTORY] (mode: ${mode})"
-    check_container "${container}"
+    local applied_count=0
+    for sql_file in "${sql_files[@]}"; do
+        local file_name
+        file_name="$(basename "${sql_file}")"
 
-    # Future: execute inventory migration files here
-    log_success "Inventory domain completed successfully!"
+        if [ "${mode}" = "--schema" ]; then
+            # Schema only: execute files containing schema, init, create, or alter
+            if [[ "${file_name}" =~ (schema|init|create|alter|table) ]]; then
+                apply_sql_file "${container}" "${user}" "${database}" "${sql_file}"
+                applied_count=$((applied_count + 1))
+            fi
+        elif [ "${mode}" = "--seed" ]; then
+            # Seed only: execute files containing seed, data, or sample
+            if [[ "${file_name}" =~ (seed|data|sample) ]]; then
+                apply_sql_file "${container}" "${user}" "${database}" "${sql_file}"
+                applied_count=$((applied_count + 1))
+            fi
+        else
+            # 'all' or '--update': apply all migrations in order (old + new updated tables)
+            apply_sql_file "${container}" "${user}" "${database}" "${sql_file}"
+            applied_count=$((applied_count + 1))
+        fi
+    done
+
+    log_success "Domain [${domain_name^^}] completed successfully (${applied_count} migration files applied)!"
+}
+
+# Seed Catalog Domain
+seed_catalog() {
+    execute_domain_migrations "catalog" "esupermarket-postgres-catalog-1" "catalog_db" "${1:-all}"
 }
 
 # Seed User Domain
 seed_user() {
-    local mode="${1:-all}"
-    local container="esupermarket-postgres-catalog-1"
-    local user="application"
-    local database="user_db"
-    local domain_dir="${MIGRATIONS_DIR}/user"
+    execute_domain_migrations "user" "esupermarket-postgres-user-1" "user_db" "${1:-all}"
+}
 
-    log_info "Starting database setup for domain: [USER] (mode: ${mode})"
-    check_container "${container}"
+# Seed Inventory Domain (Placeholder for future)
+seed_inventory() {
+    execute_domain_migrations "inventory" "esupermarket-postgres-inventory-1" "inventory_db" "${1:-all}"
+}
 
-    # Ensure database exists
-    docker exec -i "${container}" psql -U "${user}" -d postgres -tc "SELECT 1 FROM pg_database WHERE datname='${database}'" | grep -q 1 || \
-        docker exec -i "${container}" psql -U "${user}" -d postgres -c "CREATE DATABASE ${database};"
-
-    case "${mode}" in
-        --schema)
-            reset_schema "${container}" "${user}" "${database}"
-            apply_sql_file "${container}" "${user}" "${database}" "${domain_dir}/V1__init_user_schema.sql"
-            ;;
-        --seed)
-            apply_sql_file "${container}" "${user}" "${database}" "${domain_dir}/V2__seed_admin_user.sql"
-            ;;
-        all|"")
-            reset_schema "${container}" "${user}" "${database}"
-            apply_sql_file "${container}" "${user}" "${database}" "${domain_dir}/V1__init_user_schema.sql"
-            apply_sql_file "${container}" "${user}" "${database}" "${domain_dir}/V2__seed_admin_user.sql"
-            ;;
-        *)
-            log_error "Unknown mode '${mode}'. Use --schema, --seed, or omit for all."
-            return 1
-            ;;
-    esac
-
-    log_success "User domain completed successfully!"
+# Seed Order Domain (Placeholder for future)
+seed_order() {
+    execute_domain_migrations "order" "esupermarket-postgres-order-1" "order_db" "${1:-all}"
 }
 
 # Display help/usage
@@ -195,17 +198,20 @@ usage() {
     echo "  catalog       Manage catalog_db"
     echo "  user          Manage user_db"
     echo "  inventory     Manage inventory_db (future)"
+    echo "  order         Manage order_db (future)"
     echo "  all           Manage all available domains"
     echo ""
     echo "Modes (optional):"
-    echo "  --schema      Reset schema and apply only schema migrations (V1)"
-    echo "  --seed        Apply only seed data (V2, V3) without resetting"
-    echo "  (none)        Reset schema and apply all migrations (V1, V2, V3)"
+    echo "  (none)        Reset schema and apply ALL migrations in order (old + new tables)"
+    echo "  --update      Apply all migrations WITHOUT wiping existing data (safe schema update)"
+    echo "  --schema      Reset schema and apply only schema DDL migrations"
+    echo "  --seed        Apply only seed data without resetting schema"
     echo ""
     echo "Examples:"
-    echo "  $0 catalog"
-    echo "  $0 user"
-    echo "  $0 all"
+    echo "  $0 user                  # Fresh rebuild: creates all old and new updated tables"
+    echo "  $0 user --update         # Safe update: applies new tables without deleting existing data"
+    echo "  $0 catalog               # Fresh rebuild for catalog_db"
+    echo "  $0 all                   # Fresh rebuild for all domains"
     echo "================================================================="
 }
 
@@ -229,10 +235,14 @@ main() {
         inventory)
             seed_inventory "${mode}"
             ;;
+        order)
+            seed_order "${mode}"
+            ;;
         all)
             seed_catalog "${mode}"
             seed_user "${mode}"
             seed_inventory "${mode}"
+            seed_order "${mode}"
             ;;
         *)
             log_error "Unknown domain: '${domain}'"

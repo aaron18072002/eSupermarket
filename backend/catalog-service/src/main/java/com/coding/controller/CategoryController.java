@@ -5,6 +5,8 @@ import com.coding.dto.request.UpdateCategoryRequest;
 import com.coding.dto.response.ApiResponse;
 import com.coding.dto.response.CategoryResponse;
 import com.coding.service.ICategoryService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.UUID;
 
+@Tag(name = "Category", description = "Endpoints for hierarchical product categories and subcategories")
 @RestController
 @RequestMapping("/api/v1/categories")
 @RequiredArgsConstructor
@@ -28,6 +31,7 @@ public class CategoryController {
 
     private final ICategoryService categoryService;
 
+    @Operation(summary = "Create a new category")
     @PostMapping
     public ResponseEntity<ApiResponse<CategoryResponse>> createCategory(
             @Valid @RequestBody CreateCategoryRequest request) {
@@ -41,6 +45,7 @@ public class CategoryController {
         );
     }
 
+    @Operation(summary = "Get category by ID")
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<CategoryResponse>> readCategoryById(
             @PathVariable UUID id) {
@@ -54,6 +59,7 @@ public class CategoryController {
         );
     }
 
+    @Operation(summary = "Get all categories")
     @GetMapping
     public ResponseEntity<ApiResponse<List<CategoryResponse>>> readAllCategories() {
         List<CategoryResponse> response = this.categoryService.readAllCategories();
@@ -66,6 +72,7 @@ public class CategoryController {
         );
     }
 
+    @Operation(summary = "Get root categories (categories without parent)")
     @GetMapping("/roots")
     public ResponseEntity<ApiResponse<List<CategoryResponse>>> readRootCategories() {
         List<CategoryResponse> response = this.categoryService.readRootCategories();
@@ -78,6 +85,7 @@ public class CategoryController {
         );
     }
 
+    @Operation(summary = "Get direct subcategories by parent ID")
     @GetMapping("/{id}/subcategories")
     public ResponseEntity<ApiResponse<List<CategoryResponse>>> readSubcategories(
             @PathVariable UUID id) {
@@ -91,6 +99,7 @@ public class CategoryController {
         );
     }
 
+    @Operation(summary = "Update category by ID")
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<CategoryResponse>> updateCategory(
             @PathVariable UUID id,
@@ -105,6 +114,7 @@ public class CategoryController {
         );
     }
 
+    @Operation(summary = "Delete category by ID")
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteCategoryById(
             @PathVariable UUID id) {

@@ -5,6 +5,8 @@ import com.coding.dto.request.UpdateTagRequest;
 import com.coding.dto.response.ApiResponse;
 import com.coding.dto.response.TagResponse;
 import com.coding.service.ITagService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.UUID;
 
+@Tag(name = "Tag", description = "Endpoints for managing product tags and classifications")
 @RestController
 @RequestMapping("/api/v1/tags")
 @RequiredArgsConstructor
@@ -28,6 +31,7 @@ public class TagController {
 
     private final ITagService tagService;
 
+    @Operation(summary = "Create a new tag")
     @PostMapping
     public ResponseEntity<ApiResponse<TagResponse>> createTag(
             @Valid @RequestBody CreateTagRequest request) {
@@ -41,6 +45,7 @@ public class TagController {
         );
     }
 
+    @Operation(summary = "Get tag by ID")
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<TagResponse>> readTagById(
             @PathVariable UUID id) {
@@ -54,6 +59,7 @@ public class TagController {
         );
     }
 
+    @Operation(summary = "Get all tags")
     @GetMapping
     public ResponseEntity<ApiResponse<List<TagResponse>>> readAllTags() {
         List<TagResponse> response = this.tagService.readAllTags();
@@ -66,6 +72,7 @@ public class TagController {
         );
     }
 
+    @Operation(summary = "Update tag by ID")
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<TagResponse>> updateTag(
             @PathVariable UUID id,
@@ -80,6 +87,7 @@ public class TagController {
         );
     }
 
+    @Operation(summary = "Delete tag by ID")
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteTagById(
             @PathVariable UUID id) {
