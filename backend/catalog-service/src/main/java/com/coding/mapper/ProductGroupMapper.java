@@ -17,6 +17,8 @@ public interface ProductGroupMapper {
     ProductGroupResponse toResponse(ProductGroup productGroup);
 
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
     void updateProductGroupFromRequest(UpdateProductGroupRequest request, @MappingTarget ProductGroup productGroup);
 
 }

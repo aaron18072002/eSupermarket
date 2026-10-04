@@ -4,11 +4,13 @@ import com.coding.dto.request.ChangePasswordRequest;
 import com.coding.dto.request.UpdateUserRequest;
 import com.coding.dto.response.ApiResponse;
 import com.coding.dto.response.UserResponse;
+import com.coding.security.JwtUtil;
 import com.coding.service.IUserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -30,15 +32,13 @@ import java.util.UUID;
 public class UserController {
 
     private final IUserService userService;
+    private final JwtUtil jwtUtil;
 
     @Operation(summary = "Get current authenticated user profile")
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<UserResponse>> readCurrentUser(
-            @RequestHeader(value = "X-User-Id", required = false) String userIdHeader) {
-        if (userIdHeader == null || userIdHeader.isBlank()) {
-            throw new IllegalArgumentException("User context header 'X-User-Id' is missing");
-        }
-        UUID userId = UUID.fromString(userIdHeader);
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader) {
+        UUID userId = extractUserIdFromAuthHeader(authHeader);
         UserResponse response = this.userService.readUserById(userId);
         return ResponseEntity.ok(
                 ApiResponse.<UserResponse>builder()
@@ -114,6 +114,14 @@ public class UserController {
                         .message("User deleted successfully")
                         .build()
         );
+    }
+
+    private UUID extractUserIdFromAuthHeader(String authHeader) {
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            return UUID.fromString(this.jwtUtil.extractUserId(token));
+        }
+        throw new IllegalArgumentException("Invalid Authorization header format. Expected 'Bearer <token>'");
     }
 
 }

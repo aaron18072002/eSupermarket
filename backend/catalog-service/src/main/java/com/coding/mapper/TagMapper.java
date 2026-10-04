@@ -17,6 +17,8 @@ public interface TagMapper {
     TagResponse toResponse(Tag tag);
 
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
     void updateTagFromRequest(UpdateTagRequest request, @MappingTarget Tag tag);
 
 }

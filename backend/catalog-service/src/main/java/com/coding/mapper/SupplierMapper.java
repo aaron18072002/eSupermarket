@@ -17,6 +17,8 @@ public interface SupplierMapper {
     SupplierResponse toResponse(Supplier supplier);
 
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
     void updateSupplierFromRequest(UpdateSupplierRequest request, @MappingTarget Supplier supplier);
 
 }
