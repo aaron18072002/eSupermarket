@@ -16,7 +16,7 @@ public class SepayHmacValidator {
 
     private final String secretKey;
 
-    public SepayHmacValidator(@Value("${sepay.secret-key:your_sepay_secret_key}") String secretKey) {
+    public SepayHmacValidator(@Value("${sepay.secret-key}") String secretKey) {
         this.secretKey = secretKey;
     }
 

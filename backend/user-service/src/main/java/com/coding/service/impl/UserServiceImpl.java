@@ -50,7 +50,7 @@ public class UserServiceImpl implements IUserService {
     @Transactional(readOnly = true)
     public List<UserResponse> readAllUsers() {
         return this.userRepository.findAll().stream()
-                .map(this.userMapper::toResponse)
+                .map(user -> this.userMapper.toResponse(user))
                 .toList();
     }
 

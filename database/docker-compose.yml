@@ -55,8 +55,31 @@ services:
       timeout: 5s
       retries: 5
 
+  postgres-inventory:
+    image: postgres:16-alpine
+    container_name: esupermarket-postgres-inventory-1
+    restart: always
+    ports:
+      - "5438:5432"
+    environment:
+      POSTGRES_USER: application
+      POSTGRES_PASSWORD: "123456"
+      POSTGRES_DB: inventory_db
+    volumes:
+      - inventory_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U application -d inventory_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
 volumes:
   catalog_pgdata:
+    name: catalog_pgdata
   user_pgdata:
+    name: user_pgdata
   order_pgdata:
+    name: order_pgdata
+  inventory_pgdata:
+    name: inventory_pgdata
 

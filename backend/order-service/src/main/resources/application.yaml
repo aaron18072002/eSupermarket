@@ -6,24 +6,28 @@ spring:
     name: order-service
 
   datasource:
-    url: ${DATABASE_URL:jdbc:postgresql://localhost:5437/order_db}
-    username: ${DATABASE_USERNAME:application}
-    password: ${DATABASE_PASSWORD:123456}
+    url: jdbc:postgresql://localhost:5437/order_db
+    username: application
+    password: "123456"
     driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:
-      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
+      ddl-auto: update
     show-sql: true
     properties:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
+application:
+  jwt:
+    secret: liverpoolvodich123456
+
 eureka:
   client:
     service-url:
-      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka/}
+      defaultZone: http://localhost:8761/eureka/
   instance:
     prefer-ip-address: true
 
@@ -37,10 +41,11 @@ springdoc:
 
 # SePay VietQR Payment Configuration
 sepay:
+  bank-name: TPBank
   bank-account: 10000788121
-  bank-name: NGUYEN THANH ANH
-  secret-key: @Liverpoolvodich123
-  qr-template: ${SEPAY_QR_TEMPLATE:https://qr.sepay.vn/img}
+  account-holder: NGUYEN THANH ANH
+  secret-key: "@Liverpoolvodich123"
+  qr-template: https://vietqr.app/img
 
 logging:
   level:

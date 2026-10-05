@@ -32,8 +32,8 @@ public class JwtUtil {
 
     public JwtUtil(
             @Value("${application.jwt.secret}") String secret,
-            @Value("${application.jwt.access-token-expiration-ms:86400000}") long accessTokenExpirationMs,
-            @Value("${application.jwt.refresh-token-expiration-ms:604800000}") long refreshTokenExpirationMs
+            @Value("${application.jwt.access-token-expiration-ms}") long accessTokenExpirationMs,
+            @Value("${application.jwt.refresh-token-expiration-ms}") long refreshTokenExpirationMs
     ) {
         this.secretKey = deriveSigningKey(secret);
         this.accessTokenExpirationMs = accessTokenExpirationMs;

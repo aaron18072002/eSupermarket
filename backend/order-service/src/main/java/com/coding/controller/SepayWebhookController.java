@@ -67,7 +67,8 @@ public class SepayWebhookController {
             return ResponseEntity.ok(
                     ApiResponse.<Map<String, Object>>builder()
                             .status(HttpStatus.OK.value())
-                            .message(processed ? "Webhook processed successfully" : "Webhook acknowledged but order unmapped")
+                            .message(processed ? "Webhook processed successfully" :
+                                    "Webhook acknowledged but order unmapped")
                             .data(Map.of("success", processed))
                             .build()
             );

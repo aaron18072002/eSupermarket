@@ -27,4 +27,16 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
     @Query("SELECT COALESCE(SUM(o.totalAmount), 0) FROM Order o WHERE o.status = com.coding.model.OrderStatus.PAID OR o.status = com.coding.model.OrderStatus.PROCESSING OR o.status = com.coding.model.OrderStatus.DELIVERED")
     BigDecimal sumTotalRevenue();
 
+    @Query("""
+        SELECT new com.coding.dto.response.DashboardMetricsProjection(
+            COALESCE(SUM(CASE WHEN o.status = com.coding.model.OrderStatus.PAID OR o.status = com.coding.model.OrderStatus.PROCESSING OR o.status = com.coding.model.OrderStatus.DELIVERED THEN o.totalAmount ELSE 0 END), 0),
+            COUNT(o),
+            COUNT(CASE WHEN o.status = com.coding.model.OrderStatus.PAID THEN 1 END),
+            COUNT(CASE WHEN o.status = com.coding.model.OrderStatus.PENDING_PAYMENT THEN 1 END),
+            COUNT(CASE WHEN o.status = com.coding.model.OrderStatus.CANCELLED THEN 1 END)
+        )
+        FROM Order o
+    """)
+    com.coding.dto.response.DashboardMetricsProjection getDashboardMetrics();
+
 }

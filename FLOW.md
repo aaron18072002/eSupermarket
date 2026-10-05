@@ -25,7 +25,8 @@ flowchart TD
     subgraph Internal ["3. Private Backend Services"]
         CS["📦 Catalog Service\n(:8081)"]
         US["👤 User Service\n(:8082)"]
-        OS["🛒 Order Service\n(:8084 - Planned)"]
+        OS["🛒 Order Service\n(:8083)"]
+        IS["📋 Inventory Service\n(:8084)"]
     end
 
     %% North-South Traffic
@@ -33,14 +34,18 @@ flowchart TD
     GW -.->|2. Ask address for lb://| EUK
     GW -->|3. Forward Request| CS
     GW -->|3. Forward Request| US
+    GW -->|3. Forward Request| OS
+    GW -->|3. Forward Request| IS
 
     %% East-West Traffic
     OS -.->|Direct Call via OpenFeign| CS
+    OS -.->|Direct Call via OpenFeign| IS
 
     %% Service Registration
     CS -.->|Register & Heartbeat| EUK
     US -.->|Register & Heartbeat| EUK
     OS -.->|Register & Heartbeat| EUK
+    IS -.->|Register & Heartbeat| EUK
 ```
 
 ---
@@ -197,16 +202,19 @@ Microservices talk directly to each other without passing through API Gateway:
 ```mermaid
 sequenceDiagram
     autonumber
-    participant OS as 🛒 Order Service (:8084)
+    participant OS as 🛒 Order Service (:8083)
     participant EUK as 🧭 Eureka (:8761)
     participant CS as 📦 Catalog Service (:8081)
+    participant IS as 📋 Inventory Service (:8084)
 
-    Note over OS: Customer places an order.<br/>Need to verify product price.
-    OS->>EUK: 1. Where is 'catalog-service'?
-    EUK-->>OS: 2. It is at 127.0.0.1:8081
+    Note over OS: Customer places an order.<br/>Need to verify product price and stock.
+    OS->>EUK: 1. Where is 'catalog-service' & 'inventory-service'?
+    EUK-->>OS: 2. Catalog is at :8081, Inventory is at :8084
     OS->>CS: 3. Direct HTTP call: GET /api/v1/products/{id}<br/>(Via @FeignClient without Gateway)
     CS-->>OS: 4. Product details & current price
-    Note over OS: 5. Process order successfully!
+    OS->>IS: 5. Direct HTTP call: POST /api/v1/inventories/deduct<br/>(Via @FeignClient without Gateway)
+    IS-->>OS: 6. Stock reserved successfully
+    Note over OS: 7. Process order successfully!
 ```
 
 ---
@@ -219,5 +227,8 @@ sequenceDiagram
 | **API Gateway** | `8080` | Front door for Next.js. Checks JWT tokens and routes requests via `lb://`. | Bypasses `/v3/api-docs` & `/swagger-ui` |
 | **Catalog Service** | `8081` | Manages products, categories, brands, tags, and images. | `http://localhost:8081/swagger-ui.html` |
 | **User Service** | `8082` | Handles user accounts, passwords, login, and JWT tokens. | `http://localhost:8082/swagger-ui.html` |
+| **Order Service** | `8083` | Handles checkout, VietQR SePay payments, and revenue analytics. | `http://localhost:8083/swagger-ui.html` |
+| **Inventory Service** | `8084` | Manages warehouse stock levels, low-stock alerts, and stock deductions. | `http://localhost:8084/swagger-ui.html` |
 | **OpenFeign** | *Library* | Lets backend services call each other directly using Eureka names. | N/A |
+
 

@@ -38,17 +38,21 @@ public class OrderServiceImpl implements IOrderService {
     private final OrderRepository orderRepository;
     private final OrderMapper orderMapper;
 
-    @Value("${sepay.bank-account:0123456789}")
+    @Value("${sepay.bank-account}")
     private String bankAccount;
 
-    @Value("${sepay.bank-name:TPBank}")
+    @Value("${sepay.bank-name}")
     private String bankName;
 
-    @Value("${sepay.qr-template:https://qr.sepay.vn/img}")
+    @Value("${sepay.account-holder}")
+    private String accountHolder;
+
+    @Value("${sepay.qr-template}")
     private String qrTemplate;
 
     private static final SecureRandom RANDOM = new SecureRandom();
-    private static final Pattern ORDER_CODE_PATTERN = Pattern.compile("ORD[0-9]{8}", Pattern.CASE_INSENSITIVE);
+    private static final Pattern ORDER_CODE_PATTERN =
+            Pattern.compile("ORD[0-9]{8}", Pattern.CASE_INSENSITIVE);
 
     @Override
     public OrderResponse createOrder(CreateOrderRequest request) {
@@ -100,7 +104,7 @@ public class OrderServiceImpl implements IOrderService {
     public List<OrderResponse> readOrdersByUserId(UUID userId) {
         return this.orderRepository.findByUserIdOrderByCreatedAtDesc(userId)
                 .stream()
-                .map(this.orderMapper::toResponse)
+                .map(order -> this.orderMapper.toResponse(order))
                 .toList();
     }
 
@@ -109,30 +113,28 @@ public class OrderServiceImpl implements IOrderService {
     public List<OrderResponse> readAllOrders() {
         return this.orderRepository.findAll()
                 .stream()
-                .map(this.orderMapper::toResponse)
+                .map(order -> this.orderMapper.toResponse(order))
                 .toList();
     }
 
     @Override
     @Transactional(readOnly = true)
     public DashboardSummaryResponse readDashboardSummary() {
-        BigDecimal totalRevenue = Optional.ofNullable(this.orderRepository.sumTotalRevenue()).orElse(BigDecimal.ZERO);
-        long totalOrders = this.orderRepository.count();
-        long paidOrders = this.orderRepository.countByStatus(OrderStatus.PAID);
-        long pendingOrders = this.orderRepository.countByStatus(OrderStatus.PENDING_PAYMENT);
-        long cancelledOrders = this.orderRepository.countByStatus(OrderStatus.CANCELLED);
+        var metrics = Optional.ofNullable(this.orderRepository.getDashboardMetrics())
+                .orElse(new com.coding.dto.response.DashboardMetricsProjection(BigDecimal.ZERO, 0L, 0L, 0L, 0L));
 
-        List<OrderResponse> recentOrders = this.orderRepository.findTop10ByOrderByCreatedAtDesc()
+        List<OrderResponse> recentOrders = this.orderRepository
+                .findTop10ByOrderByCreatedAtDesc()
                 .stream()
-                .map(this.orderMapper::toResponse)
+                .map(order -> this.orderMapper.toResponse(order))
                 .toList();
 
         return new DashboardSummaryResponse(
-                totalRevenue,
-                totalOrders,
-                paidOrders,
-                pendingOrders,
-                cancelledOrders,
+                metrics.totalRevenue() != null ? metrics.totalRevenue() : BigDecimal.ZERO,
+                metrics.totalOrders(),
+                metrics.paidOrders(),
+                metrics.pendingOrders(),
+                metrics.cancelledOrders(),
                 recentOrders
         );
     }
@@ -152,13 +154,15 @@ public class OrderServiceImpl implements IOrderService {
         // Extract order code from transfer content
         String orderCode = extractOrderCode(content);
         if (orderCode == null) {
-            log.warn("Could not find matching order code in SePay transfer content: '{}'", content);
+            log.warn("Could not find matching order code in SePay transfer content: '{}'",
+                    content);
             return false;
         }
 
         Optional<Order> orderOpt = this.orderRepository.findByOrderCode(orderCode);
         if (orderOpt.isEmpty()) {
-            log.warn("No order found in database matching code [{}] from SePay content '{}'", orderCode, content);
+            log.warn("No order found in database matching code [{}] from SePay content '{}'",
+                    orderCode, content);
             return false;
         }
 
@@ -166,7 +170,8 @@ public class OrderServiceImpl implements IOrderService {
 
         // Idempotency: if already paid, return true without re-processing
         if (order.getStatus() == OrderStatus.PAID) {
-            log.info("Order [{}] is already marked as PAID. Skipping duplicate webhook.", orderCode);
+            log.info("Order [{}] is already marked as PAID. Skipping duplicate webhook.",
+                    orderCode);
             return true;
         }
 
@@ -199,9 +204,10 @@ public class OrderServiceImpl implements IOrderService {
 
     private String buildVietQrUrl(String orderCode, BigDecimal amount) {
         String encodedOrderCode = URLEncoder.encode(orderCode, StandardCharsets.UTF_8);
+        String encodedHolder = URLEncoder.encode(this.accountHolder, StandardCharsets.UTF_8).replace("+", "%20");
         long roundedAmount = amount.longValue();
-        return String.format("%s?acc=%s&bank=%s&amount=%d&des=%s",
-                this.qrTemplate, this.bankAccount, this.bankName, roundedAmount, encodedOrderCode);
+        return String.format("%s?bank=%s&acc=%s&template=compact&amount=%d&des=%s&showinfo=true&holder=%s",
+                this.qrTemplate, this.bankName, this.bankAccount, roundedAmount, encodedOrderCode, encodedHolder);
     }
 
     private String extractOrderCode(String text) {

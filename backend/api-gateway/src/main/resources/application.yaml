@@ -13,7 +13,7 @@ spring:
         # Catalog Service Routes
         # -------------------------------------------------------------
         - id: catalog-service
-          uri: ${CATALOG_SERVICE_URL:lb://catalog-service}
+          uri: lb://catalog-service
           predicates:
             - Path=/api/v1/products/**, /api/v1/categories/**, /api/v1/brands/**, /api/v1/suppliers/**, /api/v1/tags/**, /api/v1/product-groups/**
 
@@ -21,7 +21,7 @@ spring:
         # User / Auth Service Routes
         # -------------------------------------------------------------
         - id: user-service
-          uri: ${USER_SERVICE_URL:lb://user-service}
+          uri: lb://user-service
           predicates:
             - Path=/api/v1/auth/**, /api/v1/users/**
 
@@ -29,9 +29,17 @@ spring:
         # Order / Payment Service Routes
         # -------------------------------------------------------------
         - id: order-service
-          uri: ${ORDER_SERVICE_URL:lb://order-service}
+          uri: lb://order-service
           predicates:
             - Path=/api/v1/orders/**
+
+        # -------------------------------------------------------------
+        # Inventory / Stock Service Routes
+        # -------------------------------------------------------------
+        - id: inventory-service
+          uri: lb://inventory-service
+          predicates:
+            - Path=/api/v1/inventories/**
 
       # Global CORS configuration for Next.js frontend
       globalcors:
@@ -54,8 +62,8 @@ spring:
 # Custom Application Properties
 application:
   jwt:
-    # HMAC secret (can be overridden via JWT_SECRET environment variable)
-    secret: ${JWT_SECRET:liverpoolvodich123456}
+    # HMAC secret
+    secret: liverpoolvodich123456
 
 # Actuator Endpoints Configuration
 management:
@@ -73,7 +81,7 @@ management:
 eureka:
   client:
     service-url:
-      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka/}
+      defaultZone: http://localhost:8761/eureka/
   instance:
     prefer-ip-address: true
 

@@ -204,7 +204,24 @@ Central Service Registry and Discovery server for the polyglot microservices pla
 ---
 
 ### 6. Inventory Service (`backend/inventory-service`)
-Tracks physical warehouse/store stock across locations and handles reservations during checkout.
+The **Inventory Service** manages physical supermarket stock, warehouse locations, stock deductions, safety thresholds, and inventory analytics.
+
+- **Port:** `8084`
+- **Swagger UI:** [http://localhost:8084/swagger-ui.html](http://localhost:8084/swagger-ui.html)
+- **OpenAPI JSON Spec:** [http://localhost:8084/v3/api-docs](http://localhost:8084/v3/api-docs)
+- **Security Scheme:** Bearer Authentication (JWT token with `ROLE_ADMIN` for stock mutations and dashboard metrics)
+
+#### Managed Database Tables:
+| Table | Description |
+| :--- | :--- |
+| `INVENTORIES` | Warehouse stock tracking recording product ID, quantity, reserved quantity, safety stock threshold, warehouse location, and stock status |
+
+#### REST Endpoints:
+- `/api/v1/inventories` (POST) - Register inventory item for product (Admin only)
+- `/api/v1/inventories/product/{productId}` (GET) - Check current inventory by product ID
+- `/api/v1/inventories/product/{productId}/stock` (PUT) - Update stock quantity or safety threshold (Admin only)
+- `/api/v1/inventories/deduct` (POST) - Deduct stock during checkout
+- `/api/v1/inventories/dashboard/summary` (GET) - Admin analytics: total items, low stock items, out of stock items (Admin only)
 
 ### 7. Frontend Web App (`frontend/`)
 Customer-facing web application built with Next.js App Router for browsing catalogs, searching products, and shopping cart operations.
