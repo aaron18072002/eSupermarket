@@ -74,7 +74,8 @@ public class AuthServiceImpl implements IAuthService {
         }
 
         if (user.getStatus() != UserStatus.ACTIVE) {
-            throw new InvalidCredentialsException("Account is currently " + user.getStatus().name().toLowerCase());
+            throw new InvalidCredentialsException("Account is currently " +
+                    user.getStatus().name().toLowerCase());
         }
 
         String accessToken = this.jwtUtil.generateAccessToken(user);
