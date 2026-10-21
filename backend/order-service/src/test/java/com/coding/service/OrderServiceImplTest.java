@@ -2,6 +2,8 @@ package com.coding.service;
 
 import com.coding.dto.request.CreateOrderRequest;
 import com.coding.dto.request.OrderItemRequest;
+import com.coding.dto.response.DashboardMetricsProjection;
+import com.coding.dto.response.DashboardSummaryResponse;
 import com.coding.dto.response.OrderResponse;
 import com.coding.mapper.OrderMapper;
 import com.coding.model.Order;
@@ -16,7 +18,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -27,10 +28,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class OrderServiceImplVietQrTest {
+class OrderServiceImplTest {
 
     @Mock
     private OrderRepository orderRepository;
@@ -43,27 +45,23 @@ class OrderServiceImplVietQrTest {
     @BeforeEach
     void setUp() {
         this.orderService = new OrderServiceImpl(orderRepository, orderMapper);
-        ReflectionTestUtils.setField(orderService, "bankAccount", "10000788121");
-        ReflectionTestUtils.setField(orderService, "bankName", "TPBank");
-        ReflectionTestUtils.setField(orderService, "accountHolder", "NGUYEN THANH ANH");
-        ReflectionTestUtils.setField(orderService, "qrTemplate", "https://vietqr.app/img");
     }
 
     @Test
-    @DisplayName("Should generate correct VietQR URL matching vietqr.app specification")
-    void testVietQrUrlFormat() {
+    @DisplayName("Should create cash/COD order successfully with PROCESSING status")
+    void testCreateOrderCash() {
         UUID userId = UUID.randomUUID();
         CreateOrderRequest request = new CreateOrderRequest(
                 userId,
                 "John Doe",
                 "john@example.com",
                 "+84901234567",
-                "123 Street",
-                PaymentMethod.VIETQR,
-                "Urgent delivery",
+                "123 Nguyen Hue, District 1, HCMC",
+                PaymentMethod.COD,
+                "Leave at front door",
                 List.of(new OrderItemRequest(
                         UUID.randomUUID(),
-                        "Milk",
+                        "Fresh Milk 1L",
                         "SKU-MILK-001",
                         "http://image.jpg",
                         BigDecimal.valueOf(25000),
@@ -95,7 +93,6 @@ class OrderServiceImplVietQrTest {
                     o.getTotalAmount(),
                     o.getStatus(),
                     o.getPaymentMethod(),
-                    o.getPaymentQrUrl(),
                     o.getNotes(),
                     o.getPaidAt(),
                     LocalDateTime.now(),
@@ -106,21 +103,25 @@ class OrderServiceImplVietQrTest {
 
         OrderResponse response = orderService.createOrder(request);
 
-        assertNotNull(response.paymentQrUrl());
-        assertTrue(response.paymentQrUrl().startsWith("https://vietqr.app/img?bank=TPBank&acc=10000788121&template=compact&amount=50000&des="));
-        assertTrue(response.paymentQrUrl().contains("&showinfo=true&holder=NGUYEN%20THANH%20ANH"));
+        assertNotNull(response);
+        assertEquals(OrderStatus.PROCESSING, response.status());
+        assertEquals(PaymentMethod.COD, response.paymentMethod());
+        assertEquals(BigDecimal.valueOf(50000), response.totalAmount());
+        assertNotNull(response.orderCode());
+        assertTrue(response.orderCode().startsWith("ORD"));
+        verify(orderRepository).save(any(Order.class));
     }
 
     @Test
     @DisplayName("Should retrieve dashboard summary via single-query projection")
     void testReadDashboardSummary() {
-        var projection = new com.coding.dto.response.DashboardMetricsProjection(
+        DashboardMetricsProjection projection = new DashboardMetricsProjection(
                 BigDecimal.valueOf(1500000), 20L, 15L, 3L, 2L
         );
         when(orderRepository.getDashboardMetrics()).thenReturn(projection);
         when(orderRepository.findTop10ByOrderByCreatedAtDesc()).thenReturn(List.of());
 
-        var summary = orderService.readDashboardSummary();
+        DashboardSummaryResponse summary = orderService.readDashboardSummary();
 
         assertNotNull(summary);
         assertEquals(BigDecimal.valueOf(1500000), summary.totalRevenue());
@@ -130,4 +131,5 @@ class OrderServiceImplVietQrTest {
         assertEquals(2L, summary.cancelledOrders());
         assertTrue(summary.recentOrders().isEmpty());
     }
+
 }

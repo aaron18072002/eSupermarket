@@ -15,7 +15,6 @@ public class RouterValidator {
             "/api/v1/auth/register",
             "/api/v1/auth/login",
             "/api/v1/auth/refresh-token",
-            "/api/v1/orders/sepay-webhook",
             "/actuator",
             "/v3/api-docs",
             "/swagger-ui"
@@ -36,16 +35,17 @@ public class RouterValidator {
         HttpMethod method = request.getMethod();
 
         // Check unconditionally open endpoints
-        if (OPEN_API_ENDPOINTS.stream().anyMatch(path::startsWith)) {
+        if (OPEN_API_ENDPOINTS.stream().anyMatch(endpoint -> path.startsWith(endpoint))) {
             return false;
         }
 
         // Allow public GET for catalog browsing
-        if (HttpMethod.GET.equals(method) && PUBLIC_GET_PREFIXES.stream().anyMatch(path::startsWith)) {
+        if (HttpMethod.GET.equals(method) && PUBLIC_GET_PREFIXES.stream().anyMatch(prefix -> path.startsWith(prefix))) {
             return false;
         }
 
         // All other requests require authentication
         return true;
     };
+
 }

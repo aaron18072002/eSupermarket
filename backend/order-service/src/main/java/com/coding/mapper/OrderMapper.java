@@ -18,7 +18,6 @@ public interface OrderMapper {
     @Mapping(target = "orderCode", ignore = true)
     @Mapping(target = "totalAmount", ignore = true)
     @Mapping(target = "status", ignore = true)
-    @Mapping(target = "paymentQrUrl", ignore = true)
     @Mapping(target = "paidAt", ignore = true)
     @Mapping(target = "items", ignore = true)
     Order toEntity(CreateOrderRequest request);

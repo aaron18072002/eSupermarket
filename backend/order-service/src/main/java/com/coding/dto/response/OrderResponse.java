@@ -19,7 +19,6 @@ public record OrderResponse(
         BigDecimal totalAmount,
         OrderStatus status,
         PaymentMethod paymentMethod,
-        String paymentQrUrl,
         String notes,
         LocalDateTime paidAt,
         LocalDateTime createdAt,

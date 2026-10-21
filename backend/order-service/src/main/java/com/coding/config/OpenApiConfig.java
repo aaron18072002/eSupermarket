@@ -19,8 +19,8 @@ public class OpenApiConfig {
     public OpenAPI orderServiceOpenAPI() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("eSupermarket - Order & Payment Service API")
-                        .description("REST API documentation for Order Management and SePay VietQR payment processing.")
+                        .title("eSupermarket - Order Service API")
+                        .description("REST API documentation for Order Management and cash checkout processing.")
                         .version("v1.0.0")
                         .contact(new Contact()
                                 .name("eSupermarket Engineering")

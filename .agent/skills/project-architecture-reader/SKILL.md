@@ -36,7 +36,7 @@ eSupermarket/
 │   ├── api-gateway/              # Reverse Proxy & Edge Router (Port 8080)
 │   ├── catalog-service/          # Master Catalog & Product Management (Port 8081)
 │   ├── user-service/             # Authentication & Profiles (Port 8082)
-│   ├── order-service/            # Orders, VietQR & Analytics (Port 8083)
+│   ├── order-service/            # Orders, Cash Checkout & Analytics (Port 8083)
 │   └── inventory-service/        # Stock Tracking & Reservations (Port 8084)
 ├── database/                     # PostgreSQL Docker & Flyway Migrations
 │   ├── docker-compose.yml        # Multi-database container cluster (5435-5438)
@@ -80,7 +80,7 @@ Review each microservice's:
 - Data models and database table mappings.
 - Public vs. secured REST endpoints.
 - Direct Swagger UI documentation (`http://localhost:<PORT>/swagger-ui.html`).
-- External payment gateway integrations (e.g., SePay VietQR webhook handling).
+- Payment handling and checkout processing.
 
 ### Step 4: Validate Against [coding-standards.md](file:///D:/fe/eSupermarket/.agent/rules/coding-standards.md)
 Verify that any proposed code adheres strictly to:

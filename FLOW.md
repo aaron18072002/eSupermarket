@@ -227,7 +227,7 @@ sequenceDiagram
 | **API Gateway** | `8080` | Front door for Next.js. Checks JWT tokens and routes requests via `lb://`. | Bypasses `/v3/api-docs` & `/swagger-ui` |
 | **Catalog Service** | `8081` | Manages products, categories, brands, tags, and images. | `http://localhost:8081/swagger-ui.html` |
 | **User Service** | `8082` | Handles user accounts, passwords, login, and JWT tokens. | `http://localhost:8082/swagger-ui.html` |
-| **Order Service** | `8083` | Handles checkout, VietQR SePay payments, and revenue analytics. | `http://localhost:8083/swagger-ui.html` |
+| **Order Service** | `8083` | Handles checkout, cash payments, and revenue analytics. | `http://localhost:8083/swagger-ui.html` |
 | **Inventory Service** | `8084` | Manages warehouse stock levels, low-stock alerts, and stock deductions. | `http://localhost:8084/swagger-ui.html` |
 | **OpenFeign** | *Library* | Lets backend services call each other directly using Eureka names. | N/A |
 

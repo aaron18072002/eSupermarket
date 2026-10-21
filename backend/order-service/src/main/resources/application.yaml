@@ -39,14 +39,6 @@ springdoc:
     operationsSorter: method
     tagsSorter: alpha
 
-# SePay VietQR Payment Configuration
-sepay:
-  bank-name: TPBank
-  bank-account: 10000788121
-  account-holder: NGUYEN THANH ANH
-  secret-key: "@Liverpoolvodich123"
-  qr-template: https://vietqr.app/img
-
 logging:
   level:
     root: INFO

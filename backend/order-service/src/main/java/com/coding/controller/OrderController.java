@@ -33,7 +33,7 @@ public class OrderController {
     private final IOrderService orderService;
     private final JwtUtil jwtUtil;
 
-    @Operation(summary = "Create a new order and generate VietQR payment link")
+    @Operation(summary = "Create a new order")
     @PostMapping
     public ResponseEntity<ApiResponse<OrderResponse>> createOrder(
             @Valid @RequestBody CreateOrderRequest request) {

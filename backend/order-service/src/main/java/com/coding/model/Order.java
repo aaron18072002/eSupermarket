@@ -15,6 +15,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.BatchSize;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -60,15 +61,12 @@ public class Order extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 30)
     @Builder.Default
-    private OrderStatus status = OrderStatus.PENDING_PAYMENT;
+    private OrderStatus status = OrderStatus.PROCESSING;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_method", nullable = false, length = 20)
     @Builder.Default
-    private PaymentMethod paymentMethod = PaymentMethod.VIETQR;
-
-    @Column(name = "payment_qr_url", length = 1000)
-    private String paymentQrUrl;
+    private PaymentMethod paymentMethod = PaymentMethod.COD;
 
     @Column(name = "notes", length = 500)
     private String notes;
@@ -76,7 +74,7 @@ public class Order extends BaseEntity {
     @Column(name = "paid_at")
     private LocalDateTime paidAt;
 
-    @org.hibernate.annotations.BatchSize(size = 25)
+    @BatchSize(size = 25)
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<OrderItem> items = new ArrayList<>();

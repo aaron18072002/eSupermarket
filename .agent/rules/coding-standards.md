@@ -15,7 +15,7 @@ All controllers and service interfaces across microservices MUST follow uniform 
 | **Search** | `search...` | `searchProducts(query, pageable)` |
 | **Update** | `update...` | `updateProduct()`, `updateUser()`, `updateOrderStatus()` |
 | **Deletion** | `delete...` | `deleteProductById()`, `deleteUserById()` |
-| **Validation / Utility**| `validate...` / `process...` | `validateAdminRole()`, `processSepayWebhook()` |
+| **Validation / Utility**| `validate...` / `process...` | `validateAdminRole()`, `validatePassword()` |
 
 > **Prohibited:** Do not use arbitrary or mixed prefixes such as `get...`, `find...`, `fetch...`, `save...`, `modify...` in Controller or Service interfaces. Keep Repository methods aligned with Spring Data JPA conventions (`findById`, `existsByOrderCode`).
 
@@ -108,6 +108,6 @@ All business exceptions must extend `RuntimeException` and be handled centrally 
 ## 6. 🔒 Security & Cryptographic Standards
 
 * **Deterministic Key Derivation:** All microservices sharing JWT tokens must derive 256-bit HMAC signing keys using SHA-256 (`JwtUtil.deriveSigningKey`).
-* **Timing-Attack Prevention:** Webhook signatures (e.g., SePay HMAC-SHA256) must always be validated using constant-time comparison via `MessageDigest.isEqual()`.
+* **Timing-Attack Prevention:** Webhook signatures (e.g., HMAC-SHA256) must always be validated using constant-time comparison via `MessageDigest.isEqual()`.
 * **Role-Based Access Control (RBAC):** Admin endpoints (e.g., `/dashboard/summary`, `readAllOrders`) must verify `ROLE_ADMIN` from token claims.
 * **OpenAPI Documentation:** All protected microservices must declare the `BearerAuth` security scheme in `OpenApiConfig`.
