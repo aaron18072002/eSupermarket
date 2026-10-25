@@ -43,6 +43,7 @@ eSupermarket/
 
 **Frontend:**
 - **Framework:** Next.js (App Router) & React
+- **Runtime:** Node.js (`v22.23.3`)
 - **Language:** TypeScript
 - **Styling & Formatting:** Tailwind CSS, Prettier
 

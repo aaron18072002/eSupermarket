@@ -28,6 +28,7 @@ To maintain compatibility and prevent dependency version drift across microservi
 | Technology / Library | Standard Version | Purpose / Notes |
 | :--- | :--- | :--- |
 | **Java JDK** | `17` | Language baseline for all backend microservices |
+| **Node.js Runtime** | `v22.23.3` | JavaScript/TypeScript runtime baseline for frontend Storefront |
 | **Spring Boot** | `3.3.4` / `4.0.8` | Core application framework |
 | **Spring Cloud** | `2025.1.3` / `2023.0.3` | Eureka service discovery and API Gateway |
 | **Spring Cloud OpenFeign** | `4.2.0` | East-West synchronous service communication |
@@ -70,11 +71,14 @@ To maintain compatibility and prevent dependency version drift across microservi
   * For aggregations and metrics, write single-pass JPQL projection queries (`SELECT new com.coding.dto.response.DashboardMetricsProjection(...)`) instead of issuing multiple sequential queries.
 
 ### TypeScript & Next.js Formatting Guidelines
+* **Front-End Architecture & Retail UI Skill:** Refer to [.agent/skills/frontend-engineering/SKILL.md](file:///C:/Projects/eSupermarket/.agent/skills/frontend-engineering/SKILL.md) for full Điện Máy Xanh retail UI guidelines, Gateway API contracts, and implementation examples.
 * **App Router Structure:** Strictly use the Next.js `app/` directory convention.
-* **Server vs. Client Components:** Default to React Server Components (RSC) for data fetching. Mark components with `'use client'` only when state or browser event handlers are needed.
+* **Server vs. Client Components:** Default to React Server Components (RSC) for data fetching. Mark components with `'use client'` only when state or browser event handlers are needed (pushing `'use client'` down to interactive leaf components).
 * **Caching & Revalidation:** Use Next.js incremental cache tags with `fetch(url, { next: { revalidate: 60, tags: [...] } })`.
 * **Indentation:** 2 spaces indentation for TypeScript, TSX, JSON, and YAML files.
 * **Strict Type Safety:** Avoid `any`. Define dedicated interfaces or types for all API responses and component props.
+* **Fail-Fast Environment Variables:** No default fallbacks (`process.env.VAR || 'default'`); throw immediate descriptive error if missing.
+* **Method & Action Prefixes:** Standard prefixes `create...`, `read...`, `search...`, `update...`, `delete...`.
 
 ---
 
