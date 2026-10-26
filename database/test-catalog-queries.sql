@@ -1,29 +1,31 @@
-
 -- ==============================================================================
--- eSupermarket - Catalog Service DBeaver Inspection & Testing Queries
+-- eSupermarket / Điện Máy Xanh - Catalog Service Inspection & Testing Queries
 -- Based on entities in: backend/catalog-service/src/main/java/com/coding/model
+-- Compatible with PostgreSQL 16 & DBeaver
 -- ==============================================================================
 
 -- ==============================================================================
 -- QUERY 1: MASTER CATALOG VIEW (Clean 1-row-per-product with all relations joined)
 -- Connects: Product, Category (Hierarchy), Brand, Supplier, Group, Tags, Attributes, Images
+-- Displays price in VND format
 -- ==============================================================================
 SELECT 
     p.id AS product_id,
     p.sku,
     p.barcode,
     p.name AS product_name,
-    p.price,
-    CONCAT(p.package_size, ' ', p.unit_of_measure) AS package,
+    TO_CHAR(p.price, 'FM999,999,999') || ' ₫' AS formatted_price_vnd,
+    p.price AS raw_price,
+    CONCAT(p.package_size, ' ', p.unit_of_measure) AS spec_summary,
     COALESCE(parent_cat.name || ' > ', '') || cat.name AS category_path,
     cat.name AS subcategory,
-    COALESCE(parent_cat.name, '-') AS parent_category,
+    COALESCE(parent_cat.name, 'Root') AS parent_category,
     b.name AS brand,
     COALESCE(b.country, '-') AS brand_origin,
     s.name AS supplier,
     COALESCE(pg.name, 'None') AS product_group,
     COALESCE(STRING_AGG(DISTINCT t.name, ', '), 'None') AS tags,
-    COALESCE(STRING_AGG(DISTINCT pa.attr_key || ': ' || pa.attr_value, ' | '), 'None') AS attributes,
+    COALESCE(STRING_AGG(DISTINCT pa.attr_key || ': ' || pa.attr_value, ' | '), 'None') AS spec_attributes,
     COALESCE(STRING_AGG(DISTINCT pi.image_url, ', '), 'None') AS images,
     p.created_at,
     p.updated_at
@@ -57,7 +59,7 @@ ORDER BY p.sku;
 
 
 -- ==============================================================================
--- QUERY 2: JSON VIEW (Simulates the Catalog Service API Response structure)
+-- QUERY 2: JSON VIEW (Simulates the Catalog Service /api/v1/products API Response)
 -- ==============================================================================
 SELECT 
     jsonb_pretty(
@@ -98,24 +100,30 @@ ORDER BY p.sku;
 
 
 -- ==============================================================================
--- QUERY 3: FULL FLAT / UNNESTED DETAIL (Every single row combination)
+-- QUERY 3: HIERARCHICAL CATEGORY NAVIGATION TREE (For Header & Megamenu)
+-- ==============================================================================
+SELECT 
+    parent.id AS root_category_id,
+    parent.name AS root_category_name,
+    child.id AS subcategory_id,
+    child.name AS subcategory_name,
+    COUNT(p.id) AS product_count
+FROM CATEGORIES parent
+LEFT JOIN CATEGORIES child ON child.parent_id = parent.id
+LEFT JOIN PRODUCTS p ON p.category_id = child.id
+WHERE parent.parent_id IS NULL
+GROUP BY parent.id, parent.name, child.id, child.name
+ORDER BY parent.name, child.name;
+
+
+-- ==============================================================================
+-- QUERY 4: SPECIFICATION CHIPS INSPECTION (First 3 attributes used on Product Cards)
 -- ==============================================================================
 SELECT 
     p.sku,
     p.name AS product_name,
-    cat.name AS subcategory,
-    b.name AS brand,
-    s.name AS supplier,
-    t.name AS tag,
-    pa.attr_key,
-    pa.attr_value,
-    pi.image_url
+    STRING_AGG(pa.attr_key || ': ' || pa.attr_value, ' | ') AS spec_chips
 FROM PRODUCTS p
-LEFT JOIN CATEGORIES cat ON p.category_id = cat.id
-LEFT JOIN BRANDS b ON p.brand_id = b.id
-LEFT JOIN SUPPLIERS s ON p.supplier_id = s.id
-LEFT JOIN PRODUCT_TAGS pt ON p.id = pt.product_id
-LEFT JOIN TAGS t ON pt.tag_id = t.id
 LEFT JOIN PRODUCT_ATTRIBUTES pa ON p.id = pa.product_id
-LEFT JOIN PRODUCT_IMAGES pi ON p.id = pi.product_id
-ORDER BY p.sku, t.name, pa.attr_key;
+GROUP BY p.sku, p.name
+ORDER BY p.sku;

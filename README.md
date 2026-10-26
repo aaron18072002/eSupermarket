@@ -89,14 +89,14 @@ The **Catalog Service** manages the master catalog, categorization, branding, su
 #### Managed Database Tables:
 | Table | Description |
 | :--- | :--- |
-| `BRANDS` | Brands and manufacturers (e.g., Danone, Barilla, Coca-Cola) |
-| `CATEGORIES` | Hierarchical department and category tree (parent-child hierarchy) |
-| `SUPPLIERS` | Wholesale suppliers and distributors |
-| `PRODUCT_GROUPS` | Bundles and variant collections (e.g., Breakfast Essentials) |
-| `TAGS` | Marketing, dietary, and promotional tags (e.g., Organic, Vegan, Best Seller) |
-| `PRODUCTS` | Core product items with SKU, barcode, price, and package sizing |
-| `PRODUCT_TAGS` | Many-to-many join table between products and tags |
-| `PRODUCT_ATTRIBUTES` | Dynamic key-value specifications per product (e.g., Fat Content, Storage) |
+| `BRANDS` | Brands and manufacturers (e.g., Samsung, Sony, LG, Panasonic, Sunhouse) |
+| `CATEGORIES` | Hierarchical department and category tree (e.g., Tivi, Tủ Lạnh, Máy Giặt, Gia Dụng) |
+| `SUPPLIERS` | Authorized distributors (e.g., Samsung Vina, LG VN, Sony VN, Digiworld) |
+| `PRODUCT_GROUPS` | Retail bundles and collections (e.g., Gian Bếp Tiện Nghi, Rạp Chiếu Phim Tại Gia) |
+| `TAGS` | Promotional badges (e.g., Trả góp 0%, Giá rẻ quá, Bán chạy, Giảm sốc) |
+| `PRODUCTS` | Consumer electronics & appliances with SKU, barcode, VND price, and specs |
+| `PRODUCT_TAGS` | Many-to-many join table between products and promotional tags |
+| `PRODUCT_ATTRIBUTES` | Dynamic technical specifications per product (e.g., Kích cỡ màn hình, Inverter) |
 | `PRODUCT_IMAGES` | Storefront image URLs collection per product |
 
 #### API Conventions & Method Prefix Standards:
@@ -117,8 +117,8 @@ All controllers and service interfaces adhere to strict prefix standards:
 
 #### Database Migrations (Flyway):
 - `V1__init_catalog_schema.sql` - Full DDL for all 9 tables, indexes, and constraints.
-- `V2__seed_reference_data.sql` - Master reference data for categories, brands, suppliers, tags, and groups.
-- `V3__seed_sample_products.sql` - Realistic sample supermarket products with attributes, tags, and images.
+- `V2__seed_reference_data.sql` - Master reference data for Điện Máy Xanh categories, brands, suppliers, tags, and groups.
+- `V3__seed_sample_products.sql` - 20 realistic consumer electronics & appliances with specs, tags, images, and VND pricing.
 
 ---
 
@@ -238,8 +238,8 @@ Customer-facing web application built with Next.js App Router for browsing catal
    ```
 
 2. **Initialize Database & Seed Data (Manual On-Demand):**
-   ```bash
-   ./local-init-data.sh catalog
+   ```powershell
+   .\local-init-data.ps1 catalog
    ```
 
 3. **Run Catalog Service:**
