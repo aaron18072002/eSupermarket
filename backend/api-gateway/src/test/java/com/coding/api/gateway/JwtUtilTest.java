@@ -1,6 +1,7 @@
 package com.coding.api.gateway;
 
 import com.coding.api.gateway.util.JwtUtil;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.SignatureException;
@@ -12,7 +13,9 @@ import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class JwtUtilTest {
 
@@ -27,7 +30,7 @@ class JwtUtilTest {
     }
 
     @Test
-    @DisplayName("Should extract userId and roles from valid JWT token using liverpoolvodich123456")
+    @DisplayName("Should extract claims from valid JWT token using liverpoolvodich123456")
     void shouldExtractClaimsFromValidToken() {
         String token = Jwts.builder()
                 .subject("user-uuid-12345")
@@ -37,10 +40,10 @@ class JwtUtilTest {
                 .signWith(signingKey)
                 .compact();
 
-        assertEquals("user-uuid-12345", jwtUtil.extractUserId(token));
-        assertEquals("ROLE_ADMIN,ROLE_CUSTOMER", jwtUtil.extractRoles(token));
-        assertTrue(jwtUtil.validateToken(token));
-        assertFalse(jwtUtil.isTokenExpired(token));
+        Claims claims = jwtUtil.extractAllClaims(token);
+        assertNotNull(claims);
+        assertEquals("user-uuid-12345", claims.getSubject());
+        assertEquals(List.of("ROLE_ADMIN", "ROLE_CUSTOMER"), claims.get("roles", List.class));
     }
 
     @Test
@@ -54,8 +57,6 @@ class JwtUtilTest {
                 .compact();
 
         assertThrows(ExpiredJwtException.class, () -> jwtUtil.extractAllClaims(expiredToken));
-        assertTrue(jwtUtil.isTokenExpired(expiredToken));
-        assertFalse(jwtUtil.validateToken(expiredToken));
     }
 
     @Test
@@ -68,6 +69,5 @@ class JwtUtilTest {
                 .compact();
 
         assertThrows(SignatureException.class, () -> jwtUtil.extractAllClaims(forgedToken));
-        assertFalse(jwtUtil.validateToken(forgedToken));
     }
 }

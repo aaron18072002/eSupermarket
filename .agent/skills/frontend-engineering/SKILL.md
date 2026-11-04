@@ -86,7 +86,9 @@ The UI system reproduces the high-converting, high-density retail design languag
 
 ### 2. ⚡ Next.js App Router & Caching Standards
 
-- **Directory Convention:** All routes and layouts reside strictly inside `frontend/src/app/`.
+- **Directory & Route Convention:** All routes reside strictly inside `frontend/src/app/`. Route entry points must strictly be named `page.tsx` (never `index.page.ts` or `index.tsx`).
+- **Component Colocation via Private Folders (`_components`):** Single-use child components for a specific route must be colocated in `src/app/<route>/_components/<component-name>.tsx`. Shared components across routes reside in `src/components/`.
+- **Descriptive File Naming (No Generic `index.tsx`):** Every component file must have a descriptive kebab-case filename (e.g., `login-form.tsx`, `spec-chip.tsx`). Generic `index.tsx` or `index.ts` component files are prohibited to eliminate "Index Tab Hell" in IDEs.
 - **Server Components (RSC) by Default:** Data fetching happens on the server. Do not add `'use client'` to page components or data-fetching wrappers.
 - **Push `'use client'` Down:** Only interactive leaf components (search input autocomplete, image zoom slider, variant selectors, add-to-cart buttons) may declare `'use client'`.
 - **Incremental Cache Tags & ISR:** Catalog fetch requests must define explicit cache tags and revalidation timers:
@@ -120,12 +122,16 @@ The UI system reproduces the high-converting, high-density retail design languag
   - `404 NOT_FOUND`: Resource missing. Call Next.js `notFound()` or display empty state.
   - `409 CONFLICT`: Duplicate entity (SKU, barcode, email). Display collision notification.
   - `500 INTERNAL_ERROR`: Internal service error. Catch with `error.tsx` boundary.
-- **Auth Propagation:** Mutating calls (`POST`, `PUT`, `DELETE`) pass Bearer tokens via `Authorization: Bearer <token>`.
+- **Auth Propagation & Storage:**
+  - Client auth tokens (`accessToken`, `refreshToken`, user profile) are stored in browser `localStorage` (not cookies).
+  - Mutating calls (`POST`, `PUT`, `DELETE`) pass Bearer tokens via `Authorization: Bearer <token>`.
 
 ---
 
 ### 4. 📝 Strict Coding & Formatting Rules
 
+- **Pure Functions Only (Zero Classes):** Modern frontend strictly uses functional components, hooks, and standalone exported functions. Do not use ES6/TypeScript `class` structures or custom `class ... extends Error`.
+- **Direct Response Pattern (No "Result" Word):** Do not create artificial `Result` or `Either` types. Always return and handle the uniform `ApiResponse<T>` contract named `response` (`{ status, message, data }`).
 - **Indentation:** Exactly **2 spaces** indentation for TypeScript, TSX, JSON, and CSS.
 - **Strict Typing (Zero `any`):** Strictly no `any`. Use strict interfaces, generics, or `unknown` with runtime type narrowing.
 - **Maximum Line Length:** Strictly **120 characters** per line. Break chains, arguments, and long JSX strings across lines.
@@ -184,7 +190,13 @@ Before submitting frontend code, verify each item:
 - [ ] **PDP Layout:** Detail pages use 2-column layout (`col-span-7` media/specs, `col-span-5 sticky top-20` buy box).
 - [ ] **Spec Chips:** Product specs are presented using compact attribute pill chips.
 - [ ] **RSC by Default:** Pages and data fetching are React Server Components; `'use client'` is pushed to leaf components.
+- [ ] **Route Entry Points:** Route entry points are strictly named `page.tsx` (no `index.page.ts`).
+- [ ] **Descriptive File Names:** Components use descriptive kebab-case names; generic `index.tsx` is prohibited.
+- [ ] **Route Colocation:** Single-use child components are colocated in `src/app/<route>/_components/`.
 - [ ] **Caching:** Fetches include incremental cache tags (`next: { revalidate: 60, tags: [...] }`).
 - [ ] **TypeScript Cleanliness:** Zero `any` types; all interfaces explicitly defined.
 - [ ] **Action Prefixes:** Functions strictly prefixed with `create...`, `read...`, `search...`, `update...`, `delete...`.
+- [ ] **Pure Functional (Zero Classes):** Strictly no classes in frontend code; pure functions, hooks, and interfaces only.
+- [ ] **Direct Response Pattern:** Uses direct `ApiResponse<T>` named `response`; no `Result` wrapper abstractions.
+- [ ] **Token Storage:** JWT tokens are stored and retrieved from browser `localStorage` (not cookies).
 - [ ] **Formatting:** 2 spaces indentation; maximum 120 characters line limit; explicit arrow lambda functions.

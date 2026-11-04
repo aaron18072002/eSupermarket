@@ -30,7 +30,7 @@ public class RouterValidator {
             "/api/v1/product-groups"
     );
 
-    public Predicate<ServerHttpRequest> isSecured = request -> {
+    public Predicate<ServerHttpRequest> isSecured = (request) -> {
         String path = request.getURI().getPath();
         HttpMethod method = request.getMethod();
 
@@ -40,7 +40,8 @@ public class RouterValidator {
         }
 
         // Allow public GET for catalog browsing
-        if (HttpMethod.GET.equals(method) && PUBLIC_GET_PREFIXES.stream().anyMatch(prefix -> path.startsWith(prefix))) {
+        if (HttpMethod.GET.equals(method) && PUBLIC_GET_PREFIXES.stream()
+                .anyMatch(prefix -> path.startsWith(prefix))) {
             return false;
         }
 

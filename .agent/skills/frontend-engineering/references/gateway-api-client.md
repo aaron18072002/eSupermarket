@@ -123,3 +123,20 @@ All API client methods and Server Actions must use standard action prefixes:
 - `search...` -> `searchCatalog`, `searchProductsByKeywords`
 - `update...` -> `updateCartItemQuantity`, `updateUserProfile`
 - `delete...` -> `deleteCartItem`, `deleteOrderDraft`
+
+---
+
+## 6. 🔒 Pure Functional & Session Standards (Zero Classes)
+
+- **Pure Functional Design:** All API communication is handled through pure exported functions. Classes (`class ... extends Error`) are strictly prohibited in the frontend layer.
+- **Direct Response Convention:** Functions consume and return the uniform `ApiResponse<T>` contract (`response.status`, `response.message`, `response.data`). Do not introduce `Result` abstractions.
+- **Client Session Storage:** JWT tokens (`accessToken`, `refreshToken`, and user profiles) must be stored in browser `localStorage` (not cookies). Pure helper functions manage persistence:
+  ```typescript
+  export const storeAuthTokens = (authData: AuthResponse): void => {
+    if (typeof window === "undefined") return;
+    localStorage.setItem("accessToken", authData.accessToken);
+    localStorage.setItem("refreshToken", authData.refreshToken);
+    localStorage.setItem("tokenType", authData.tokenType);
+    localStorage.setItem("userProfile", JSON.stringify(authData.user));
+  };
+  ```

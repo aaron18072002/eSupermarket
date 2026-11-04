@@ -3,102 +3,70 @@ import { readAppConfig } from "./env-config";
 export interface ApiResponse<T> {
   status: number;
   message: string;
-  data: T;
+  data: T | null;
 }
 
-export class ApiError extends Error {
-  public readonly status: number;
-  public readonly responseBody?: unknown;
-
-  constructor(status: number, message: string, responseBody?: unknown) {
-    super(message);
-    this.name = "ApiError";
-    this.status = status;
-    this.responseBody = responseBody;
-  }
+export interface AuthSessionData {
+  accessToken: string;
+  refreshToken: string;
+  tokenType: string;
+  user: unknown;
 }
 
-const handleResponse = async <T>(response: Response): Promise<T> => {
-  if (!response.ok) {
-    let errorData: unknown;
-    try {
-      errorData = await response.json();
-    } catch {
-      errorData = await response.text();
-    }
-
-    const message =
-      typeof errorData === "object" &&
-      errorData !== null &&
-      "message" in errorData
-        ? String((errorData as { message: unknown }).message)
-        : `Request failed with HTTP status ${response.status}`;
-
-    switch (response.status) {
-      case 400:
-        throw new ApiError(400, `Bad Request: ${message}`, errorData);
-      case 401:
-        throw new ApiError(
-          401,
-          `Unauthorized: Session expired or invalid token`,
-          errorData,
-        );
-      case 403:
-        throw new ApiError(
-          403,
-          `Forbidden: You do not have permission for this resource`,
-          errorData,
-        );
-      case 404:
-        throw new ApiError(404, `Not Found: ${message}`, errorData);
-      case 409:
-        throw new ApiError(
-          409,
-          `Conflict: Duplicate resource detected`,
-          errorData,
-        );
-      case 500:
-      default:
-        throw new ApiError(
-          response.status,
-          `Internal Server Error: ${message}`,
-          errorData,
-        );
-    }
+const parseResponse = async <T>(response: Response): Promise<ApiResponse<T>> => {
+  try {
+    const json = (await response.json()) as ApiResponse<T>;
+    return json;
+  } catch {
+    return {
+      status: response.status,
+      message: `Request failed with HTTP status ${response.status}`,
+      data: null,
+    };
   }
-
-  const envelope: ApiResponse<T> = await response.json();
-  return envelope.data;
 };
 
-// 1. Read Action (with Next.js ISR cache tags)
+/**
+ * 1. Read Action (with Next.js ISR cache tags)
+ * Returns ApiResponse<T> directly using pure functional execution.
+ */
 export const readResource = async <T>(
   path: string,
   cacheTags: string[] = [],
   revalidateSeconds: number = 60,
-): Promise<T> => {
+): Promise<ApiResponse<T>> => {
   const { apiGatewayUrl } = readAppConfig();
   const targetUrl = `${apiGatewayUrl}${path.startsWith("/") ? path : `/${path}`}`;
 
-  const response = await fetch(targetUrl, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    next: {
-      revalidate: revalidateSeconds,
-      tags: cacheTags,
-    },
-  });
+  try {
+    const response = await fetch(targetUrl, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      next: {
+        revalidate: revalidateSeconds,
+        tags: cacheTags,
+      },
+    });
 
-  return handleResponse<T>(response);
+    return await parseResponse<T>(response);
+  } catch {
+    return {
+      status: 503,
+      message: "Không thể kết nối đến máy chủ. Vui lòng kiểm tra lại kết nối mạng.",
+      data: null,
+    };
+  }
 };
 
-// 2. Search Action
+/**
+ * 2. Search Action
+ */
 export const searchResources = async <T>(
   path: string,
   queryParams: Record<string, string | number>,
-): Promise<T> => {
+): Promise<ApiResponse<T>> => {
   const { apiGatewayUrl } = readAppConfig();
   const searchUrl = new URL(
     `${apiGatewayUrl}${path.startsWith("/") ? path : `/${path}`}`,
@@ -108,23 +76,33 @@ export const searchResources = async <T>(
     searchUrl.searchParams.append(key, String(value));
   });
 
-  const response = await fetch(searchUrl.toString(), {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    cache: "no-store",
-  });
+  try {
+    const response = await fetch(searchUrl.toString(), {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      cache: "no-store",
+    });
 
-  return handleResponse<T>(response);
+    return await parseResponse<T>(response);
+  } catch {
+    return {
+      status: 503,
+      message: "Không thể kết nối đến máy chủ. Vui lòng kiểm tra lại kết nối mạng.",
+      data: null,
+    };
+  }
 };
 
-// 3. Create Action (mutating)
+/**
+ * 3. Create Action (mutating)
+ */
 export const createResource = async <TInput, TOutput>(
   path: string,
   payload: TInput,
   bearerToken?: string,
-): Promise<TOutput> => {
+): Promise<ApiResponse<TOutput>> => {
   const { apiGatewayUrl } = readAppConfig();
   const targetUrl = `${apiGatewayUrl}${path.startsWith("/") ? path : `/${path}`}`;
 
@@ -135,21 +113,31 @@ export const createResource = async <TInput, TOutput>(
     headers["Authorization"] = `Bearer ${bearerToken}`;
   }
 
-  const response = await fetch(targetUrl, {
-    method: "POST",
-    headers,
-    body: JSON.stringify(payload),
-  });
+  try {
+    const response = await fetch(targetUrl, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(payload),
+    });
 
-  return handleResponse<TOutput>(response);
+    return await parseResponse<TOutput>(response);
+  } catch {
+    return {
+      status: 503,
+      message: "Không thể kết nối đến máy chủ. Vui lòng kiểm tra lại kết nối mạng.",
+      data: null,
+    };
+  }
 };
 
-// 4. Update Action (mutating)
+/**
+ * 4. Update Action (mutating)
+ */
 export const updateResource = async <TInput, TOutput>(
   path: string,
   payload: TInput,
   bearerToken?: string,
-): Promise<TOutput> => {
+): Promise<ApiResponse<TOutput>> => {
   const { apiGatewayUrl } = readAppConfig();
   const targetUrl = `${apiGatewayUrl}${path.startsWith("/") ? path : `/${path}`}`;
 
@@ -160,20 +148,30 @@ export const updateResource = async <TInput, TOutput>(
     headers["Authorization"] = `Bearer ${bearerToken}`;
   }
 
-  const response = await fetch(targetUrl, {
-    method: "PUT",
-    headers,
-    body: JSON.stringify(payload),
-  });
+  try {
+    const response = await fetch(targetUrl, {
+      method: "PUT",
+      headers,
+      body: JSON.stringify(payload),
+    });
 
-  return handleResponse<TOutput>(response);
+    return await parseResponse<TOutput>(response);
+  } catch {
+    return {
+      status: 503,
+      message: "Không thể kết nối đến máy chủ. Vui lòng kiểm tra lại kết nối mạng.",
+      data: null,
+    };
+  }
 };
 
-// 5. Delete Action (mutating)
+/**
+ * 5. Delete Action (mutating)
+ */
 export const deleteResource = async <TOutput>(
   path: string,
   bearerToken?: string,
-): Promise<TOutput> => {
+): Promise<ApiResponse<TOutput>> => {
   const { apiGatewayUrl } = readAppConfig();
   const targetUrl = `${apiGatewayUrl}${path.startsWith("/") ? path : `/${path}`}`;
 
@@ -184,10 +182,48 @@ export const deleteResource = async <TOutput>(
     headers["Authorization"] = `Bearer ${bearerToken}`;
   }
 
-  const response = await fetch(targetUrl, {
-    method: "DELETE",
-    headers,
-  });
+  try {
+    const response = await fetch(targetUrl, {
+      method: "DELETE",
+      headers,
+    });
 
-  return handleResponse<TOutput>(response);
+    return await parseResponse<TOutput>(response);
+  } catch {
+    return {
+      status: 503,
+      message: "Không thể kết nối đến máy chủ. Vui lòng kiểm tra lại kết nối mạng.",
+      data: null,
+    };
+  }
+};
+
+/**
+ * 6. Client Session Storage (localStorage)
+ */
+export const storeAuthTokens = (authData: AuthSessionData): void => {
+  if (typeof window === "undefined") {
+    return;
+  }
+  localStorage.setItem("accessToken", authData.accessToken);
+  localStorage.setItem("refreshToken", authData.refreshToken);
+  localStorage.setItem("tokenType", authData.tokenType);
+  localStorage.setItem("userProfile", JSON.stringify(authData.user));
+};
+
+export const readAuthToken = (): string | null => {
+  if (typeof window === "undefined") {
+    return null;
+  }
+  return localStorage.getItem("accessToken");
+};
+
+export const deleteAuthTokens = (): void => {
+  if (typeof window === "undefined") {
+    return;
+  }
+  localStorage.removeItem("accessToken");
+  localStorage.removeItem("refreshToken");
+  localStorage.removeItem("tokenType");
+  localStorage.removeItem("userProfile");
 };

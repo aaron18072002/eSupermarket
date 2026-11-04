@@ -78,6 +78,12 @@ To maintain compatibility and prevent dependency version drift across microservi
 * **Indentation:** 2 spaces indentation for TypeScript, TSX, JSON, and YAML files.
 * **Strict Type Safety:** Avoid `any`. Define dedicated interfaces or types for all API responses and component props.
 * **Fail-Fast Environment Variables:** No default fallbacks (`process.env.VAR || 'default'`); throw immediate descriptive error if missing.
+* **Pure Functions Only (Zero Classes):** Modern frontend uses pure functional components, hooks, and standalone exported functions. Strictly no ES6/TypeScript classes or custom Error classes (`class ... extends Error`) in frontend code.
+* **Direct "response" Contract (No "Result" Word):** Never create `Result` or `Either` wrapper types (e.g., `Result<T>`, `AuthResult`). Functions must directly return and consume the uniform `ApiResponse<T>` contract named `response` (`{ status, message, data }`).
+* **Client Session Storage:** Store JWT access/refresh tokens and user profiles in browser `localStorage` (not cookies). Manage tokens via pure helper functions (`storeAuthTokens`, `readAuthToken`, `deleteAuthTokens`).
+* **Strict Route File Convention (page.tsx):** Route endpoints must strictly be named `page.tsx` (e.g., `src/app/login/page.tsx`). Do not use `index.page.ts`, `index.tsx`, or custom file extensions.
+* **Descriptive File Naming (No Generic index.tsx):** All component files must use descriptive kebab-case names matching their component role (e.g., `login-form.tsx`, `product-card.tsx`). Generic `index.tsx` or `index.ts` files for components are prohibited to prevent IDE tab confusion ("Index Tab Hell") and anonymous stack traces.
+* **Component Colocation via Private Folders (_components):** Components used only on a specific route must be colocated inside `src/app/<route>/_components/<component-name>.tsx`. Components shared across multiple routes belong in `src/components/`.
 * **Method & Action Prefixes:** Standard prefixes `create...`, `read...`, `search...`, `update...`, `delete...`.
 
 ---
