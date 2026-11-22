@@ -121,3 +121,14 @@ All business exceptions must extend `RuntimeException` and be handled centrally 
 * **Timing-Attack Prevention:** Webhook signatures (e.g., HMAC-SHA256) must always be validated using constant-time comparison via `MessageDigest.isEqual()`.
 * **Role-Based Access Control (RBAC):** Admin endpoints (e.g., `/dashboard/summary`, `readAllOrders`) must verify `ROLE_ADMIN` from token claims.
 * **OpenAPI Documentation:** All protected microservices must declare the `BearerAuth` security scheme in `OpenApiConfig`.
+
+---
+
+## 7. 💬 Antigravity Communication & Response Standards
+
+When assisting or generating solutions within this repository, Antigravity must strictly adhere to the following response guidelines:
+
+* **Language Level (B1–C1):** Use clear, natural, and accessible English. Avoid overly complicated vocabulary, convoluted sentence structures, or academic jargon. Keep answers direct, friendly, and practical.
+* **Visual Diagrams & Code Flows:** Always create interactive Mermaid diagrams (flowcharts, sequence diagrams, or state diagrams) mapped directly to existing project code whenever:
+  1. Explaining how a feature, query, or architecture component works.
+  2. Recommending new solutions, design patterns, or refactorings.

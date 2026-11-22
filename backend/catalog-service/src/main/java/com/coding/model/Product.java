@@ -20,6 +20,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.BatchSize;
 
 import java.math.BigDecimal;
 import java.util.HashSet;
@@ -111,6 +112,7 @@ public class Product extends BaseEntity {
     /**
      * Tags associated with the product for filtering, promotions, and search.
      */
+    @BatchSize(size = 25)
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "PRODUCT_TAGS",
@@ -123,6 +125,7 @@ public class Product extends BaseEntity {
     /**
      * Dynamic key-value attributes (e.g., organic, gluten-free, nutrition facts).
      */
+    @BatchSize(size = 25)
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private Set<ProductAttribute> attributes = new HashSet<>();
@@ -130,6 +133,7 @@ public class Product extends BaseEntity {
     /**
      * Collection of image URLs displaying the product in the storefront.
      */
+    @BatchSize(size = 25)
     @ElementCollection
     @CollectionTable(
             name = "PRODUCT_IMAGES",
