@@ -87,8 +87,8 @@ The UI system reproduces the high-converting, high-density retail design languag
 ### 2. ⚡ Next.js App Router & Caching Standards
 
 - **Directory & Route Convention:** All routes reside strictly inside `frontend/src/app/`. Route entry points must strictly be named `page.tsx` (never `index.page.ts` or `index.tsx`).
-- **Component Colocation via Private Folders (`_components`):** Single-use child components for a specific route must be colocated in `src/app/<route>/_components/<component-name>.tsx`. Shared components across routes reside in `src/components/`.
-- **Descriptive File Naming (No Generic `index.tsx`):** Every component file must have a descriptive kebab-case filename (e.g., `login-form.tsx`, `spec-chip.tsx`). Generic `index.tsx` or `index.ts` component files are prohibited to eliminate "Index Tab Hell" in IDEs.
+- **Component Colocation via Private Folders (`_components`):** Single-use child components for a specific route must be colocated in `src/app/<route>/_components/<ComponentName>.tsx`. Shared components across routes reside in `src/components/` (e.g., `src/components/ProductCard.tsx`).
+- **Descriptive File Naming (PascalCase for Components):** Every React component file must have a descriptive PascalCase filename matching the component identifier (e.g., `LoginForm.tsx`, `SpecChip.tsx`). Generic `index.tsx` or `index.ts` component files are prohibited to eliminate "Index Tab Hell" in IDEs.
 - **Server Components (RSC) by Default:** Data fetching happens on the server. Do not add `'use client'` to page components or data-fetching wrappers.
 - **Push `'use client'` Down:** Only interactive leaf components (search input autocomplete, image zoom slider, variant selectors, add-to-cart buttons) may declare `'use client'`.
 - **Incremental Cache Tags & ISR:** Catalog fetch requests must define explicit cache tags and revalidation timers:

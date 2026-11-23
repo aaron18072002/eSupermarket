@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { LoginForm } from "./_components/login-form";
+import { LoginForm } from "./_components/LoginForm";
 
 export const metadata: Metadata = {
   title: "Đăng nhập tài khoản | eSupermarket",

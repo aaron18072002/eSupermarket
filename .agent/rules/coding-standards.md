@@ -82,8 +82,8 @@ To maintain compatibility and prevent dependency version drift across microservi
 * **Direct "response" Contract (No "Result" Word):** Never create `Result` or `Either` wrapper types (e.g., `Result<T>`, `AuthResult`). Functions must directly return and consume the uniform `ApiResponse<T>` contract named `response` (`{ status, message, data }`).
 * **Client Session Storage:** Store JWT access/refresh tokens and user profiles in browser `localStorage` (not cookies). Manage tokens via pure helper functions (`storeAuthTokens`, `readAuthToken`, `deleteAuthTokens`).
 * **Strict Route File Convention (page.tsx):** Route endpoints must strictly be named `page.tsx` (e.g., `src/app/login/page.tsx`). Do not use `index.page.ts`, `index.tsx`, or custom file extensions.
-* **Descriptive File Naming (No Generic index.tsx):** All component files must use descriptive kebab-case names matching their component role (e.g., `login-form.tsx`, `product-card.tsx`). Generic `index.tsx` or `index.ts` files for components are prohibited to prevent IDE tab confusion ("Index Tab Hell") and anonymous stack traces.
-* **Component Colocation via Private Folders (_components):** Components used only on a specific route must be colocated inside `src/app/<route>/_components/<component-name>.tsx`. Components shared across multiple routes belong in `src/components/`.
+* **Descriptive File Naming (PascalCase for Components):** All React component files must use descriptive **PascalCase** matching their component name (e.g., `LoginForm.tsx`, `ProductCard.tsx`). Generic `index.tsx` or `index.ts` files for components are prohibited to prevent IDE tab confusion ("Index Tab Hell") and anonymous stack traces.
+* **Component Colocation via Private Folders (_components):** Components used only on a specific route must be colocated inside `src/app/<route>/_components/<ComponentName>.tsx`. Components shared across multiple routes belong in `src/components/` (e.g., `src/components/ProductCard.tsx`).
 * **Method & Action Prefixes:** Standard prefixes `create...`, `read...`, `search...`, `update...`, `delete...`.
 
 ---
@@ -132,3 +132,7 @@ When assisting or generating solutions within this repository, Antigravity must 
 * **Visual Diagrams & Code Flows:** Always create interactive Mermaid diagrams (flowcharts, sequence diagrams, or state diagrams) mapped directly to existing project code whenever:
   1. Explaining how a feature, query, or architecture component works.
   2. Recommending new solutions, design patterns, or refactorings.
+  - **Terminal Width Constraint (< 180 cols):** To ensure diagrams render inline in CLI terminals without exceeding terminal width (avoiding fallback to code block):
+    - Always use vertical flow (`flowchart TD`).
+    - Stack comparisons vertically instead of putting wide subgraphs side-by-side.
+    - Keep node labels short; use `<br/>` for line breaks rather than long single-line text.

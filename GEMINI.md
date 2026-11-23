@@ -11,4 +11,8 @@ Please strictly follow the workspace coding standards and architectural conventi
 7. **Front-End Retail UI & Next.js Standards:** Refer to [.agent/skills/frontend-engineering/SKILL.md](file:///.agent/skills/frontend-engineering/SKILL.md) for the Điện Máy Xanh UI system (#2A83E9 header, #FFD400 promos, #D0021B/#FF6600 conversion hierarchy, 5-col grid, spec chips, 2-col PDP), API Gateway routing (:8080), Server Component patterns, pure functional architecture (zero classes), direct `response` contract (no "Result" word), and `localStorage` JWT token storage.
 8. **Communication & Response Standards:**
    - **Language Level:** Communicate in clear, concise B1–C1 English. Avoid overly complex words, idioms, or academic jargon. Keep sentences direct and easy to read.
-   - **Mandatory Visual Diagrams:** Always provide interactive Mermaid diagrams (flowcharts, sequence diagrams, or architecture maps) based on the current project code whenever explaining concepts, debugging, or recommending technical solutions.
+   - **Mandatory Visual Diagrams & Terminal Formatting:** Always provide interactive Mermaid diagrams (flowcharts, sequence diagrams, or architecture maps) based on the current project code whenever explaining concepts, debugging, or recommending technical solutions.
+     - **Terminal Width Constraint (< 180 cols):** To ensure diagrams render inline in CLI terminals without exceeding terminal width (avoiding fallback to code block), diagrams MUST be compact:
+       - Use vertical orientation (`flowchart TD`).
+       - Never place multiple wide subgraphs side-by-side; stack comparisons vertically.
+       - Keep node labels short and concise; use `<br/>` for line wraps instead of long continuous strings.
