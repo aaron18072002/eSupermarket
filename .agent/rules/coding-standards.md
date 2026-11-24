@@ -126,13 +126,26 @@ All business exceptions must extend `RuntimeException` and be handled centrally 
 
 ## 7. 💬 Antigravity Communication & Response Standards
 
-When assisting or generating solutions within this repository, Antigravity must strictly adhere to the following response guidelines:
+When assisting or generating solutions within this repository, Antigravity must strictly adhere to the following response guidelines, specifically optimized for **Windows PowerShell running the Antigravity CLI (`agy`)**:
 
+* **Runtime Environment Context:** The user always interacts with Antigravity using **Windows PowerShell (`agy`)**. All responses, terminal visualizations, and shell snippets must be tailored for PowerShell terminal behavior and column limits.
 * **Language Level (B1–C1):** Use clear, natural, and accessible English. Avoid overly complicated vocabulary, convoluted sentence structures, or academic jargon. Keep answers direct, friendly, and practical.
-* **Visual Diagrams & Code Flows:** Always create interactive Mermaid diagrams (flowcharts, sequence diagrams, or state diagrams) mapped directly to existing project code whenever:
-  1. Explaining how a feature, query, or architecture component works.
-  2. Recommending new solutions, design patterns, or refactorings.
-  - **Terminal Width Constraint (< 180 cols):** To ensure diagrams render inline in CLI terminals without exceeding terminal width (avoiding fallback to code block):
-    - Always use vertical flow (`flowchart TD`).
-    - Stack comparisons vertically instead of putting wide subgraphs side-by-side.
-    - Keep node labels short; use `<br/>` for line breaks rather than long single-line text.
+* **PowerShell Command Conventions:** All recommended terminal commands must be valid in PowerShell (e.g., use `$env:VAR="value"` instead of `export VAR=value`, avoid bash-specific operators, prefer universal `mvn`, `pnpm`, `git` commands).
+* **Mandatory Visual Diagrams & Zero-Failure PowerShell Chart Standards:** Always provide visual flowcharts or architectural diagrams based on current project code whenever explaining concepts, debugging, or proposing designs. To ensure diagrams NEVER fail or get demoted to raw code blocks in PowerShell:
+  1. **Strict PowerShell Terminal Width Limit (< 65 cols):**
+     - Windows PowerShell terminal windows often run at 80–120 columns (or split panes). 
+     - **Rendered graph width must strictly remain < 65 columns.**
+     - **STRICTLY NO BACKWARD EDGES / FEEDBACK LOOPS:** NEVER connect a lower node back up to an earlier node (e.g. `CheckStatus --> ShowError`). Backward routing forces Dagre to allocate wide bypass lanes around the diagram, instantly exploding diagram width beyond 220+ cols and triggering PowerShell terminal overflow.
+     - **Local Terminal Leaf Nodes:** When a decision fails, terminate immediately into local leaf nodes (e.g. `Err1["Error Alert"]` and `Err2["Error Alert"]`) instead of routing back to a shared node.
+     - **Short Arrow Labels:** Keep arrow edge labels minimal (e.g. `-- "Yes" -->`, `-- "No" -->`).
+  2. **Strictly Escape Node Labels:**
+     - ALWAYS wrap all node labels in double quotes: `NodeId["Label text"]`.
+     - NEVER use unescaped angle brackets `<...>` (e.g. generic types like `<AuthResponse>`, `<T>`, or `<void>`) as Mermaid treats them as invalid HTML tags and crashes the parser. Use parentheses `(AuthResponse)` or plain text.
+  3. **Safe Alphanumeric Node Identifiers:** Use plain alphanumeric identifiers (e.g., `Step1`, `ApiGateway`, `DbCheck`). Do not use dashes, dots, colons, or special characters in node IDs.
+  4. **Strict Vertical Orientation (`flowchart TD`):**
+     - Always use `flowchart TD` (top-down). Never use `LR` for multi-step flows.
+     - Keep the primary happy path strictly aligned in a single vertical column.
+  5. **Ultra-Short Line Lengths with `<br/>`:** Keep node text under 18–22 characters per line, wrapping with `<br/>`.
+  6. **Dual Terminal-Safe Visual Flowchart (PowerShell Unicode Box Art):**
+     - Because CLI terminals and certain markdown viewers cannot render graphical Mermaid blocks into interactive graphics, **always provide a clean ASCII/Unicode box flowchart (`┌───┐`, `│`, `▼`, `►`)** alongside or as a primary visual model.
+     - Keep box art width strictly under 60 columns to prevent wrapping on standard PowerShell console buffers.
