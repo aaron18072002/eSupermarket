@@ -1,8 +1,6 @@
-export interface ApiResponse<T> {
-  status: number;
-  message: string;
-  data: T | null;
-}
+import type { ApiResponse } from "./api";
+
+export type { ApiResponse };
 
 export interface LoginRequest {
   email: string;

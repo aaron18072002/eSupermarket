@@ -11,13 +11,15 @@ const config: Config = {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
-        dmx: {
-          blue: "#2A83E9",
-          yellow: "#FFD400",
-          red: "#D0021B",
-          orange: "#FF6600",
-          gray: "#9E9E9E",
-          surface: "#F3F4F6",
+        brand: {
+          espresso: "#3E2723",
+          cocoa: "#5C4033",
+          chestnut: "#8B5E3C",
+          sand: "#F5F1EC",
+          alabaster: "#FAF8F5",
+          border: "#EAE3DB",
+          ink: "#1F1916",
+          muted: "#6E6259",
         },
       },
     },

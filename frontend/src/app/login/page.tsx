@@ -3,8 +3,8 @@ import Link from "next/link";
 import { LoginForm } from "./_components/LoginForm";
 
 export const metadata: Metadata = {
-  title: "Đăng nhập tài khoản | eSupermarket",
-  description: "Đăng nhập vào hệ thống siêu thị eSupermarket để quản lý giỏ hàng, đơn hàng và ưu đãi.",
+  title: "Sign In | eSupermarket",
+  description: "Sign in to your eSupermarket member account.",
 };
 
 interface LoginPageProps {
@@ -17,44 +17,52 @@ export default function LoginPage({ searchParams }: LoginPageProps) {
   const redirectUrl = searchParams.redirect || "/";
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F3F4F6]">
-      {/* Brand Electric Blue Header */}
-      <header className="sticky top-0 z-50 bg-[#2A83E9] text-white shadow-md">
-        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <span className="font-extrabold text-xl tracking-tight text-white uppercase">eSupermarket</span>
-            <span className="bg-[#FFD400] text-gray-900 text-[10px] font-bold px-1.5 py-0.5 rounded">ONLINE</span>
+    <div className="min-h-screen flex flex-col bg-[#FAF8F5]">
+      {/* Minimalist White Header */}
+      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-[#EAE3DB]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2.5">
+            <span
+              className="w-8 h-8 rounded-full bg-[#3E2723] text-white
+                font-serif text-sm font-semibold flex items-center justify-center"
+            >
+              e
+            </span>
+            <span className="font-serif text-xl font-semibold tracking-tight text-[#1F1916]">
+              eSupermarket
+            </span>
           </Link>
-          <div className="text-xs text-white/90 hidden sm:block">
-            Tổng đài hỗ trợ: <strong className="text-[#FFD400]">1800 1061</strong> (7:30 - 22:00)
-          </div>
+          <Link
+            href="/"
+            className="text-xs font-medium text-[#5C4033] hover:text-[#1F1916] transition-colors"
+          >
+            ← Back to Store
+          </Link>
         </div>
       </header>
 
-      {/* Main Content Form Area */}
-      <main className="flex-1 flex flex-col justify-center items-center py-10 px-4">
+      {/* Main Centered Editorial Login Card */}
+      <main className="flex-1 flex flex-col justify-center items-center py-12 px-4">
         <LoginForm redirectUrl={redirectUrl} />
 
-        {/* Brand Reassurance Badges */}
-        <div className="mt-8 flex flex-wrap justify-center items-center gap-4 text-xs text-gray-500">
-          <span className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-[#2A83E9]"></span>
-            100% Hàng chính hãng
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-[#2A83E9]"></span>
-            Bảo hành chính hãng 12 tháng
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-[#2A83E9]"></span>
-            Giao hàng siêu tốc 2 giờ
-          </span>
+        {/* Subtle Reassurance Footer Row */}
+        <div
+          className="mt-8 flex flex-wrap justify-center items-center
+            gap-6 text-[11px] uppercase tracking-wider text-[#6E6259]"
+        >
+          <span>Authentic Brands</span>
+          <span>•</span>
+          <span>30-Day Returns</span>
+          <span>•</span>
+          <span>Same-Day Delivery</span>
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="bg-white border-t border-gray-200 py-4 text-center text-xs text-gray-500">
-        <p>© 2026 eSupermarket. Tất cả quyền được bảo lưu.</p>
+      <footer
+        className="bg-white border-t border-[#EAE3DB]
+          py-4 text-center text-[11px] text-[#6E6259]"
+      >
+        <p>© 2026 eSupermarket. All rights reserved.</p>
       </footer>
     </div>
   );

@@ -1,6 +1,7 @@
-import { readAppConfig } from "./env-config";
+import { readAppConfig } from "./envConfig";
 
 export interface ApiResponse<T> {
+  timestamp?: string;
   status: number;
   message: string;
   data: T | null;
@@ -13,17 +14,34 @@ export interface AuthSessionData {
   user: unknown;
 }
 
+const networkErrorMessage =
+  "Unable to connect to the server. Please check that the API Gateway is running.";
+
 const parseResponse = async <T>(response: Response): Promise<ApiResponse<T>> => {
-  try {
-    const json = (await response.json()) as ApiResponse<T>;
-    return json;
-  } catch {
-    return {
-      status: response.status,
-      message: `Request failed with HTTP status ${response.status}`,
-      data: null,
-    };
+  const rawBody = await response.text();
+  if (rawBody.trim().length > 0) {
+    try {
+      const parsed = JSON.parse(rawBody) as Partial<ApiResponse<T>>;
+      return {
+        timestamp: parsed.timestamp,
+        status: typeof parsed.status === "number" ? parsed.status : response.status,
+        message: parsed.message || `Request failed with HTTP status ${response.status}.`,
+        data: parsed.data ?? null,
+      };
+    } catch {
+      return {
+        status: response.status,
+        message: `Request failed with HTTP status ${response.status}.`,
+        data: null,
+      };
+    }
   }
+
+  return {
+    status: response.status,
+    message: `Request failed with HTTP status ${response.status}.`,
+    data: null,
+  };
 };
 
 /**
@@ -54,7 +72,7 @@ export const readResource = async <T>(
   } catch {
     return {
       status: 503,
-      message: "Không thể kết nối đến máy chủ. Vui lòng kiểm tra lại kết nối mạng.",
+      message: networkErrorMessage,
       data: null,
     };
   }
@@ -68,9 +86,7 @@ export const searchResources = async <T>(
   queryParams: Record<string, string | number>,
 ): Promise<ApiResponse<T>> => {
   const { apiGatewayUrl } = readAppConfig();
-  const searchUrl = new URL(
-    `${apiGatewayUrl}${path.startsWith("/") ? path : `/${path}`}`,
-  );
+  const searchUrl = new URL(`${apiGatewayUrl}${path.startsWith("/") ? path : `/${path}`}`);
 
   Object.entries(queryParams).forEach(([key, value]) => {
     searchUrl.searchParams.append(key, String(value));
@@ -89,7 +105,7 @@ export const searchResources = async <T>(
   } catch {
     return {
       status: 503,
-      message: "Không thể kết nối đến máy chủ. Vui lòng kiểm tra lại kết nối mạng.",
+      message: networkErrorMessage,
       data: null,
     };
   }
@@ -124,7 +140,7 @@ export const createResource = async <TInput, TOutput>(
   } catch {
     return {
       status: 503,
-      message: "Không thể kết nối đến máy chủ. Vui lòng kiểm tra lại kết nối mạng.",
+      message: networkErrorMessage,
       data: null,
     };
   }
@@ -159,7 +175,7 @@ export const updateResource = async <TInput, TOutput>(
   } catch {
     return {
       status: 503,
-      message: "Không thể kết nối đến máy chủ. Vui lòng kiểm tra lại kết nối mạng.",
+      message: networkErrorMessage,
       data: null,
     };
   }
@@ -192,7 +208,7 @@ export const deleteResource = async <TOutput>(
   } catch {
     return {
       status: 503,
-      message: "Không thể kết nối đến máy chủ. Vui lòng kiểm tra lại kết nối mạng.",
+      message: networkErrorMessage,
       data: null,
     };
   }

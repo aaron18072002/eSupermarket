@@ -128,7 +128,8 @@ All API client methods and Server Actions must use standard action prefixes:
 
 ## 6. 🔒 Pure Functional & Session Standards (Zero Classes)
 
-- **Pure Functional Design:** All API communication is handled through pure exported functions. Classes (`class ... extends Error`) are strictly prohibited in the frontend layer.
+- **Pure Functional Design:** All API communication is handled through pure exported functions in `camelCase` modules (e.g., `apiClient.ts`, `authService.ts`). Classes (`class ... extends Error`) are strictly prohibited in the frontend layer.
+- **Plain Error Messages:** Always return or throw plain descriptive error text without bracketed tags like `[ERROR]` or `[FAIL-FAST CONFIG ERROR]`.
 - **Direct Response Convention:** Functions consume and return the uniform `ApiResponse<T>` contract (`response.status`, `response.message`, `response.data`). Do not introduce `Result` abstractions.
 - **Client Session Storage:** JWT tokens (`accessToken`, `refreshToken`, and user profiles) must be stored in browser `localStorage` (not cookies). Pure helper functions manage persistence:
   ```typescript

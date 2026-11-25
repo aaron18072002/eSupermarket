@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "eSupermarket | Hệ thống siêu thị bán lẻ điện máy & tiêu dùng",
-  description: "Hệ thống siêu thị bán lẻ điện máy & tiêu dùng uy tín, giá tốt và giao hàng nhanh.",
+  title: "eSupermarket | Curated Modern Storefront",
+  description:
+    "Minimalist modern e-commerce storefront featuring curated brands and transparent VND pricing.",
 };
 
 export default function RootLayout({
@@ -12,8 +13,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="vi">
-      <body className="min-h-screen bg-[#F3F4F6] text-gray-900 antialiased">{children}</body>
+    <html lang="en">
+      <body className="min-h-screen bg-white text-[#1F1916] antialiased">{children}</body>
     </html>
   );
 }

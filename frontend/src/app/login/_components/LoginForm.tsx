@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createAuthLogin, storeAuthTokens } from "@/services/auth-service";
+import { createAuthLogin, storeAuthTokens } from "@/services/authService";
 
 export interface LoginFormProps {
   redirectUrl?: string;
@@ -21,15 +21,14 @@ export const LoginForm = ({ redirectUrl = "/" }: LoginFormProps) => {
     e.preventDefault();
     setErrorMessage(null);
 
-    // Client-side quick field validation
     if (!email.trim() || !password.trim()) {
-      setErrorMessage("Vui lòng điền đầy đủ email và mật khẩu.");
+      setErrorMessage("Please enter both email and password.");
       return;
     }
 
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailPattern.test(email.trim())) {
-      setErrorMessage("Địa chỉ email không đúng định dạng.");
+      setErrorMessage("Please enter a valid email address.");
       return;
     }
 
@@ -47,46 +46,59 @@ export const LoginForm = ({ redirectUrl = "/" }: LoginFormProps) => {
         router.push(destination);
         router.refresh();
       } else {
-        setErrorMessage(response.message || "Email hoặc mật khẩu không chính xác.");
+        setErrorMessage(response.message || "Invalid email or password.");
       }
-    } catch {
-      setErrorMessage("Có lỗi bất ngờ xảy ra. Vui lòng thử lại sau.");
+    } catch (error) {
+      const fallbackMessage =
+        error instanceof Error ? error.message : "An unexpected error occurred. Please try again.";
+      setErrorMessage(fallbackMessage);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="w-full max-w-md mx-auto bg-white rounded-lg border border-gray-200 shadow-md p-6 sm:p-8">
-      {/* Brand Header & Trust Badge */}
-      <div className="text-center mb-6">
-        <div className="inline-block bg-[#FFD400] text-gray-900 text-xs font-bold px-2.5 py-1 rounded mb-2">
-          HỆ THỐNG SIÊU THỊ ĐIỆN MÁY
-        </div>
-        <h1 className="text-2xl font-bold text-gray-900">Đăng nhập tài khoản</h1>
-        <p className="text-xs text-gray-500 mt-1">Nhập thông tin tài khoản để quản lý đơn hàng & tích lũy điểm</p>
+    <div
+      className="w-full max-w-md mx-auto bg-white
+        rounded-3xl border border-[#EAE3DB] shadow-[0_12px_40px_rgba(62,39,35,0.06)]
+        p-8 sm:p-10"
+    >
+      {/* Editorial Header */}
+      <div className="text-center mb-8 space-y-2">
+        <span
+          className="inline-block rounded-full bg-[#F5F1EC] px-3 py-1
+            text-[10px] font-semibold uppercase tracking-[0.16em] text-[#8B5E3C]"
+        >
+          Member Portal
+        </span>
+        <h1 className="font-serif text-2xl sm:text-3xl font-medium text-[#1F1916]">Welcome back</h1>
+        <p className="text-xs text-[#6E6259]">
+          Sign in to manage your orders, saved essentials, and member offers.
+        </p>
       </div>
 
       {/* Error Alert Banner */}
       {errorMessage && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-[#D0021B] text-sm flex items-start gap-2">
-          <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+        <div
+          className="mb-5 p-3.5 bg-[#FEF3F2] border border-red-200 rounded-xl
+            text-[#B42318] text-xs flex items-start gap-2.5"
+        >
+          <svg className="w-4 h-4 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
             <path
               fillRule="evenodd"
               d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
               clipRule="evenodd"
             />
           </svg>
-          <span className="font-medium">{errorMessage}</span>
+          <span className="font-medium leading-relaxed">{errorMessage}</span>
         </div>
       )}
 
-      {/* Login Form */}
+      {/* Sign In Form */}
       <form onSubmit={(e) => handleSubmit(e)} className="space-y-4">
-        {/* Email Field */}
         <div>
-          <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-1">
-            Địa chỉ Email <span className="text-[#D0021B]">*</span>
+          <label htmlFor="email" className="block text-xs font-medium text-[#5C4033] mb-1.5">
+            Email Address
           </label>
           <input
             id="email"
@@ -95,19 +107,24 @@ export const LoginForm = ({ redirectUrl = "/" }: LoginFormProps) => {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="nguyenvana@gmail.com"
-            className="w-full px-3.5 py-2.5 text-sm bg-white border border-gray-300 rounded-md text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#2A83E9] focus:ring-1 focus:ring-[#2A83E9] transition"
+            placeholder="name@example.com"
+            className="w-full px-4 py-2.5 text-sm bg-[#FAF8F5]
+              border border-[#E5DDD3] rounded-xl text-[#1F1916] placeholder-[#94877C]
+              focus:outline-none focus:bg-white focus:border-[#5C4033]
+              focus:ring-1 focus:ring-[#5C4033] transition-colors"
           />
         </div>
 
-        {/* Password Field */}
         <div>
-          <div className="flex items-center justify-between mb-1">
-            <label htmlFor="password" className="block text-sm font-semibold text-gray-700">
-              Mật khẩu <span className="text-[#D0021B]">*</span>
+          <div className="flex items-center justify-between mb-1.5">
+            <label htmlFor="password" className="block text-xs font-medium text-[#5C4033]">
+              Password
             </label>
-            <a href="/forgot-password" className="text-xs text-[#2A83E9] hover:underline font-medium">
-              Quên mật khẩu?
+            <a
+              href="/forgot-password"
+              className="text-xs text-[#8B5E3C] hover:text-[#3E2723] hover:underline font-medium"
+            >
+              Forgot password?
             </a>
           </div>
           <div className="relative">
@@ -118,45 +135,61 @@ export const LoginForm = ({ redirectUrl = "/" }: LoginFormProps) => {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className="w-full px-3.5 py-2.5 pr-10 text-sm bg-white border border-gray-300 rounded-md text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#2A83E9] focus:ring-1 focus:ring-[#2A83E9] transition"
+              placeholder="Enter your password"
+              className="w-full px-4 py-2.5 pr-14 text-sm bg-[#FAF8F5]
+                border border-[#E5DDD3] rounded-xl text-[#1F1916] placeholder-[#94877C]
+                focus:outline-none focus:bg-white focus:border-[#5C4033]
+                focus:ring-1 focus:ring-[#5C4033] transition-colors"
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 text-xs font-medium"
+              className="absolute inset-y-0 right-0 pr-3.5 flex items-center
+                text-[#6E6259] hover:text-[#3E2723] text-xs font-medium"
             >
-              {showPassword ? "Ẩn" : "Hiện"}
+              {showPassword ? "Hide" : "Show"}
             </button>
           </div>
         </div>
 
-        {/* Conversion Orange Submit Button */}
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full py-3 px-4 bg-[#FF6600] hover:bg-[#E65C00] disabled:bg-gray-400 text-white font-bold rounded-md shadow transition duration-150 flex items-center justify-center gap-2 text-base"
+          className="w-full py-3 px-5 mt-2 bg-[#3E2723] hover:bg-[#5C4033] disabled:bg-[#C4B8AD]
+            text-white font-medium rounded-full transition-colors
+            flex items-center justify-center gap-2 text-xs tracking-wide"
         >
           {isLoading ? (
             <>
-              <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
               </svg>
-              <span>Đang xử lý...</span>
+              <span>Signing in...</span>
             </>
           ) : (
-            <span>ĐĂNG NHẬP</span>
+            <span>Sign In</span>
           )}
         </button>
       </form>
 
       {/* Footer Registration Link */}
-      <div className="mt-6 pt-5 border-t border-gray-100 text-center">
-        <p className="text-xs text-gray-600">
-          Chưa có tài khoản tại eSupermarket?{" "}
-          <a href="/register" className="text-[#2A83E9] font-bold hover:underline">
-            Đăng ký ngay
+      <div className="mt-7 pt-5 border-t border-[#F3EFEA] text-center">
+        <p className="text-xs text-[#6E6259]">
+          New to eSupermarket?{" "}
+          <a
+            href="/register"
+            className="text-[#3E2723] font-semibold
+              underline underline-offset-4"
+          >
+            Create an account
           </a>
         </p>
       </div>
