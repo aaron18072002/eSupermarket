@@ -1,23 +1,24 @@
 ---
 name: project-architecture-reader
 description: >-
-  Inspects and analyzes the eSupermarket workspace layout, reading FLOW.md for
-  end-to-end communication traffic (North-South and East-West) and README.md for
+  Inspects and analyzes the eSupermarket workspace layout, reading document/FLOW.md for
+  backend inter-module communication (Gateway, Eureka, OpenFeign) and README.md for
   microservices portfolios, port mappings, and database configurations.
 ---
 
 # 🏛️ Project Architecture & Flow Reader Skill
 
-This skill guides the agent through inspecting the **eSupermarket** polyglot monorepo structure, understanding request lifecycles via [FLOW.md](file:///D:/fe/eSupermarket/FLOW.md), reviewing service documentation in [README.md](file:///D:/fe/eSupermarket/README.md), and adhering to [coding-standards.md](file:///D:/fe/eSupermarket/.agent/rules/coding-standards.md).
+This skill guides the agent through inspecting the **eSupermarket** polyglot monorepo structure, understanding backend inter-module lifecycles via [document/FLOW.md](../../../document/FLOW.md), exploring per-page flows via [document/README.md](../../../document/README.md), reviewing service documentation in [README.md](../../../README.md), and adhering to [coding-standards.md](../../rules/coding-standards.md).
 
 ---
 
 ## 📌 Core Documentation Index
 
 Whenever you onboard, modify services, or debug communications, read these root files first:
-1. **[FLOW.md](file:///D:/fe/eSupermarket/FLOW.md)**: Visual sequence diagrams illustrating North-South traffic (Next.js ➔ API Gateway ➔ Microservices) and East-West traffic (OpenFeign direct calls), Eureka service discovery, and Gateway JWT authorization pipelines.
-2. **[README.md](file:///D:/fe/eSupermarket/README.md)**: System overview, service descriptions, database schemas, Swagger UI documentation links, and quick-start instructions.
-3. **[.agent/rules/coding-standards.md](file:///D:/fe/eSupermarket/.agent/rules/coding-standards.md)**: Strict architectural conventions (Controller prefixes, Record DTOs, explicit lambdas, fail-fast configuration without backup values, 120-char line limit, and `@BatchSize` optimizations).
+1. **[document/FLOW.md](../../../document/FLOW.md)**: Backend inter-module communication guide illustrating API Gateway `lb://` routing, Eureka service discovery, shared JWT trust, OpenFeign East-West patterns, and DB isolation.
+2. **[document/README.md](../../../document/README.md)**: Index of per-page end-to-end flows (`document/flows/*.md`) maintained via [flow-documentation](../flow-documentation/SKILL.md).
+3. **[README.md](../../../README.md)**: System overview, service descriptions, database schemas, Swagger UI documentation links, and quick-start instructions.
+4. **[.agent/rules/coding-standards.md](../../rules/coding-standards.md)**: Strict architectural conventions (Controller prefixes, Record DTOs, explicit lambdas, fail-fast configuration without backup values, 120-char line limit, and `@BatchSize` optimizations).
 
 ---
 
@@ -28,9 +29,7 @@ eSupermarket/
 ├── .agent/
 │   ├── rules/
 │   │   └── coding-standards.md   # Platform architectural rules and coding standards
-│   └── skills/
-│       └── project-architecture-reader/
-│           └── SKILL.md          # This architecture onboarding skill
+│   └── skills/                   # Agent workflow skills (architecture, frontend, flows)
 ├── backend/                      # Java Spring Boot Microservices
 │   ├── eureka-server/            # Service Registry (Port 8761)
 │   ├── api-gateway/              # Reverse Proxy & Edge Router (Port 8080)
@@ -42,8 +41,11 @@ eSupermarket/
 │   ├── docker-compose.yml        # Multi-database container cluster (5435-5438)
 │   ├── README.md                 # Migration and database management guide
 │   └── migrations/               # Domain Flyway scripts (catalog, user, order, inventory)
+├── document/                     # Living Architecture & Page Flow Documentation
+│   ├── README.md                 # Master flow index
+│   ├── FLOW.md                   # Backend inter-module communication flow guide
+│   └── flows/                    # Per-page end-to-end flows (Browser -> FE -> BE -> DB)
 ├── frontend/                     # Next.js App Router Web Storefront (Port 3000)
-├── FLOW.md                       # Architecture & Request Flow Sequence Diagrams
 ├── GEMINI.md                     # Root workspace guidelines
 └── README.md                     # Comprehensive platform documentation
 ```
@@ -64,25 +66,25 @@ Check active ports and service names before configuring any inter-service commun
 - **Inventory:** `inventory-service` (Port `8084`, DB Port `5438`, `inventory_db`)
 - **Frontend:** Next.js Storefront (Port `3000`)
 
-### Step 2: Trace Communication Flow in [FLOW.md](file:///D:/fe/eSupermarket/FLOW.md)
-Distinguish between the two types of network traffic:
-1. **North-South Traffic (Edge to Microservice):**
-   - Client (`localhost:3000`) sends request to `http://localhost:8080/api/v1/...`.
-   - API Gateway checks CORS, logs request, and validates JWT Bearer tokens for mutating routes (`POST`, `PUT`, `DELETE`).
+### Step 2: Trace Communication Flow in [document/FLOW.md](../../../document/FLOW.md)
+Distinguish between the two types of backend traffic:
+1. **Gateway Edge Routing (`api-gateway` -> Microservices):**
+   - Requests reach `http://localhost:8080/api/v1/...`.
+   - API Gateway checks CORS, logs request, and validates JWT Bearer tokens for secured routes (`AuthenticationFilter` + `RouterValidator`).
    - API Gateway resolves target service address dynamically from Eureka (`lb://<service-name>`).
    - Forwarded request preserves original headers (e.g., `Authorization: Bearer <token>`).
 2. **East-West Traffic (Microservice to Microservice):**
    - Internal microservices communicate **directly** via Spring Cloud OpenFeign interfaces using Eureka service names (e.g., `@FeignClient(name = "catalog-service")`).
    - East-West requests **bypass** the API Gateway for minimum latency and zero edge bottlenecks.
 
-### Step 3: Inspect Service Contracts in [README.md](file:///D:/fe/eSupermarket/README.md)
+### Step 3: Inspect Service Contracts in [README.md](../../../README.md)
 Review each microservice's:
 - Data models and database table mappings.
 - Public vs. secured REST endpoints.
 - Direct Swagger UI documentation (`http://localhost:<PORT>/swagger-ui.html`).
 - Payment handling and checkout processing.
 
-### Step 4: Validate Against [coding-standards.md](file:///D:/fe/eSupermarket/.agent/rules/coding-standards.md)
+### Step 4: Validate Against [coding-standards.md](../../rules/coding-standards.md)
 Verify that any proposed code adheres strictly to:
 - **Method Prefix Standards:** `create...`, `read...`, `update...`, `delete...`, `search...`.
 - **DTO Immutability:** DTOs must be Java `record` classes.

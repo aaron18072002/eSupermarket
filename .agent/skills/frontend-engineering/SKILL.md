@@ -24,8 +24,9 @@ When building or modifying frontend components, pages, or data layers, refer to 
 5. **Product Card Component**: [ProductCard.tsx](./examples/ProductCard.tsx)
 6. **4-Column Product Grid Component**: [ProductGrid.tsx](./examples/ProductGrid.tsx)
 7. **2-Column Product Detail Page (PDP)**: [ProductDetailPage.tsx](./examples/ProductDetailPage.tsx)
-8. **Workspace Coding Standards**: [coding-standards.md](file:///C:/Projects/eSupermarket/.agent/rules/coding-standards.md)
-9. **Monorepo Request Lifecycles**: [FLOW.md](file:///C:/Projects/eSupermarket/FLOW.md)
+8. **Workspace Coding Standards**: [coding-standards.md](../../rules/coding-standards.md)
+9. **Backend Inter-Module Flows**: [FLOW.md](../../../document/FLOW.md)
+10. **End-to-End Page Flows & Skill**: [document/README.md](../../../document/README.md) & [flow-documentation](../flow-documentation/SKILL.md)
 
 ---
 
@@ -123,8 +124,8 @@ The UI system follows a calm, editorial e-commerce aesthetic inspired by modern 
     data: T | null;
   }
   ```
-- **Deterministic HTTP Status Code Handling & Safe Response Parsing:**
-  - Read raw `await httpResponse.text()` and parse JSON safely so non-JSON `503`/`502`/`404` Gateway responses still surface their real HTTP status code instead of misreporting as network failures.
+- **Deterministic HTTP Status Code Handling & Safe Response Conversion:**
+  - Read `await httpResponse.text()` and convert JSON payloads via `convertApiResponse<T>()` so non-JSON `503`/`502`/`404` Gateway responses still surface their real HTTP status code instead of misreporting as network failures.
   - `400 BAD_REQUEST`: Form/payload validation failure. Surface plain English field error messages inline.
   - `401 UNAUTHORIZED`: Invalid credentials or expired JWT token. Display plain error or redirect to `/login?redirect=...`.
   - `403 FORBIDDEN`: Insufficient role. Render access denied UI.
@@ -171,6 +172,7 @@ The UI system follows a calm, editorial e-commerce aesthetic inspired by modern 
   - `search...` -> `searchProducts()`, `searchStoresByLocation()`
   - `update...` -> `updateCartItemQuantity()`, `updateUserProfile()`
   - `delete...` -> `deleteCartItem()`, `deleteAuthTokens()`
+  - `convert...` -> `convertApiResponse()`, `convertProductPayload()` *(strictly use `convert...` instead of `parse...` for response or data conversion helpers)*
 
 ---
 
@@ -212,7 +214,7 @@ The UI system follows a calm, editorial e-commerce aesthetic inspired by modern 
 Before submitting frontend code, verify each item:
 
 - [ ] **Port Routing:** All requests target API Gateway (`:8080/api/v1/...`); zero direct calls to internal ports (`8081-8084`).
-- [ ] **Contract Envelope:** Response types are typed with `ApiResponse<T>` and safely parse non-JSON error responses.
+- [ ] **Contract Envelope:** Response types are typed with `ApiResponse<T>` and safely convert non-JSON error responses via `convertApiResponse<T>()`.
 - [ ] **Fail-Fast Env:** `readAppConfig()` throws immediately on missing keys; no `|| "default"` fallbacks.
 - [ ] **Brand Tokens:** Surfaces use `#FFFFFF` / `#FAF8F5` / `#F5F1EC`, primary actions & VND prices use `#3E2723` / `#5C4033`, accents use `#8B5E3C`, borders use `#EAE3DB`.
 - [ ] **Language & Currency:** All storefront UI copy and error messages are in **English**; prices format in **VND (`₫`)**.
@@ -225,7 +227,7 @@ Before submitting frontend code, verify each item:
 - [ ] **Route Colocation:** Single-use child components are colocated in `src/app/<route>/_components/` (or `src/app/_components/`).
 - [ ] **Caching:** Fetches include incremental cache tags (`next: { revalidate: 60, tags: [...] }`).
 - [ ] **TypeScript Cleanliness:** Zero `any` types; all interfaces explicitly defined.
-- [ ] **Action Prefixes:** Functions strictly prefixed with `create...`, `read...`, `search...`, `update...`, `delete...`.
+- [ ] **Action Prefixes:** Functions strictly prefixed with `create...`, `read...`, `search...`, `update...`, `delete...`, `convert...` (never `parse...`).
 - [ ] **Pure Functional (Zero Classes):** Strictly no classes in frontend code; pure functions, hooks, and interfaces only.
 - [ ] **Direct Response Pattern:** Uses direct `ApiResponse<T>` named `response`; no `Result` wrapper abstractions.
 - [ ] **Plain Error Messages:** Error messages use plain English text without `[XXX]` bracket prefixes.

@@ -104,7 +104,7 @@ export const readProducts = async (categorySlug?: string): Promise<Product[]> =>
   });
 
   if (!response.ok) {
-    throw await parseApiError(response);
+    throw await convertApiError(response);
   }
 
   const envelope: ApiResponse<Product[]> = await response.json();
@@ -123,6 +123,7 @@ All API client methods and Server Actions must use standard action prefixes:
 - `search...` -> `searchCatalog`, `searchProductsByKeywords`
 - `update...` -> `updateCartItemQuantity`, `updateUserProfile`
 - `delete...` -> `deleteCartItem`, `deleteOrderDraft`
+- `convert...` -> `convertApiResponse`, `convertApiError` *(strictly use `convert...` instead of `parse...`)*
 
 ---
 

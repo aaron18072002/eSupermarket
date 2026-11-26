@@ -17,31 +17,42 @@ export interface AuthSessionData {
 const networkErrorMessage =
   "Unable to connect to the server. Please check that the API Gateway is running.";
 
-const parseResponse = async <T>(response: Response): Promise<ApiResponse<T>> => {
-  const rawBody = await response.text();
-  if (rawBody.trim().length > 0) {
-    try {
-      const parsed = JSON.parse(rawBody) as Partial<ApiResponse<T>>;
-      return {
-        timestamp: parsed.timestamp,
-        status: typeof parsed.status === "number" ? parsed.status : response.status,
-        message: parsed.message || `Request failed with HTTP status ${response.status}.`,
-        data: parsed.data ?? null,
-      };
-    } catch {
+export const convertApiResponse = async <T>(
+  response: Response,
+  actionLabel: string = "Request",
+): Promise<ApiResponse<T>> => {
+  const fallbackMessage = `${actionLabel} failed with HTTP status ${response.status}.`;
+  const body = await response.text();
+  if (body.trim().length === 0) {
+    return {
+      status: response.status,
+      message: fallbackMessage,
+      data: null,
+    };
+  }
+
+  try {
+    const envelope = JSON.parse(body) as Partial<ApiResponse<T>> | null;
+    if (!envelope || typeof envelope !== "object") {
       return {
         status: response.status,
-        message: `Request failed with HTTP status ${response.status}.`,
+        message: fallbackMessage,
         data: null,
       };
     }
+    return {
+      timestamp: envelope.timestamp,
+      status: typeof envelope.status === "number" ? envelope.status : response.status,
+      message: envelope.message || fallbackMessage,
+      data: envelope.data ?? null,
+    };
+  } catch {
+    return {
+      status: response.status,
+      message: fallbackMessage,
+      data: null,
+    };
   }
-
-  return {
-    status: response.status,
-    message: `Request failed with HTTP status ${response.status}.`,
-    data: null,
-  };
 };
 
 /**
@@ -68,7 +79,7 @@ export const readResource = async <T>(
       },
     });
 
-    return await parseResponse<T>(response);
+    return await convertApiResponse<T>(response);
   } catch {
     return {
       status: 503,
@@ -101,7 +112,7 @@ export const searchResources = async <T>(
       cache: "no-store",
     });
 
-    return await parseResponse<T>(response);
+    return await convertApiResponse<T>(response);
   } catch {
     return {
       status: 503,
@@ -136,7 +147,7 @@ export const createResource = async <TInput, TOutput>(
       body: JSON.stringify(payload),
     });
 
-    return await parseResponse<TOutput>(response);
+    return await convertApiResponse<TOutput>(response);
   } catch {
     return {
       status: 503,
@@ -171,7 +182,7 @@ export const updateResource = async <TInput, TOutput>(
       body: JSON.stringify(payload),
     });
 
-    return await parseResponse<TOutput>(response);
+    return await convertApiResponse<TOutput>(response);
   } catch {
     return {
       status: 503,
@@ -204,7 +215,7 @@ export const deleteResource = async <TOutput>(
       headers,
     });
 
-    return await parseResponse<TOutput>(response);
+    return await convertApiResponse<TOutput>(response);
   } catch {
     return {
       status: 503,

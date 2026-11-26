@@ -71,7 +71,7 @@ To maintain compatibility and prevent dependency version drift across microservi
   * For aggregations and metrics, write single-pass JPQL projection queries (`SELECT new com.coding.dto.response.DashboardMetricsProjection(...)`) instead of issuing multiple sequential queries.
 
 ### TypeScript & Next.js Formatting Guidelines
-* **Front-End Architecture & Retail UI Skill:** Refer to [.agent/skills/frontend-engineering/SKILL.md](file:///C:/Projects/eSupermarket/.agent/skills/frontend-engineering/SKILL.md) for the Modern Minimalist White & Brown e-commerce UI system (`#FFFFFF`/`#FAF8F5` surfaces, `#3E2723` espresso & `#8B5E3C` chestnut accents, 4-col gallery grid, English UI copy with VND currency), Gateway API contracts, and implementation examples.
+* **Front-End Architecture & Retail UI Skill:** Refer to [../skills/frontend-engineering/SKILL.md](../skills/frontend-engineering/SKILL.md) for the Modern Minimalist White & Brown e-commerce UI system (`#FFFFFF`/`#FAF8F5` surfaces, `#3E2723` espresso & `#8B5E3C` chestnut accents, 4-col gallery grid, English UI copy with VND currency), Gateway API contracts, and implementation examples.
 * **App Router Structure:** Strictly use the Next.js `app/` directory convention.
 * **Server vs. Client Components:** Default to React Server Components (RSC) for data fetching. Mark components with `'use client'` only when state or browser event handlers are needed (pushing `'use client'` down to interactive leaf components).
 * **Caching & Revalidation:** Use Next.js incremental cache tags with `fetch(url, { next: { revalidate: 60, tags: [...] } })`.
@@ -86,7 +86,7 @@ To maintain compatibility and prevent dependency version drift across microservi
 * **Strict Route File Convention (page.tsx):** Route endpoints must strictly be named `page.tsx` (e.g., `src/app/login/page.tsx`). Do not use `index.page.ts`, `index.tsx`, or custom file extensions.
 * **Descriptive File Naming (PascalCase & camelCase Only — No kebab-case):** All React component files must use descriptive **PascalCase** matching their component name (e.g., `LoginForm.tsx`, `ProductCard.tsx`). All non-component TypeScript modules (config, services, utils, hooks, types) must use **camelCase** (e.g., `envConfig.ts`, `authService.ts`, `formatters.ts`). Strictly prohibit `kebab-case` code filenames and generic `index.tsx` or `index.ts` files.
 * **Component Colocation via Private Folders (_components):** Components used only on a specific route must be colocated inside `src/app/<route>/_components/<ComponentName>.tsx`. Components shared across multiple routes belong in `src/components/` (e.g., `src/components/ProductCard.tsx`).
-* **Method & Action Prefixes:** Standard prefixes `create...`, `read...`, `search...`, `update...`, `delete...`.
+* **Method & Action Prefixes:** Standard prefixes `create...`, `read...`, `search...`, `update...`, `delete...`, `convert...` (never `parse...` for frontend service or transformation helpers).
 
 ---
 

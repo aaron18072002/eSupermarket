@@ -31,9 +31,13 @@ eSupermarket/
 │   └── migrations/               # Domain-partitioned Flyway migration scripts
 │       ├── catalog/              # Catalog domain migrations (V1, V2, V3)
 │       └── user/                 # User domain migrations (V1, V2)
+├── document/                     # Living architecture, flow & schema documentation
+│   ├── README.md                 # Master index of backend flows and DB schemas
+│   ├── FLOW.md                   # Backend inter-module communication guide
+│   ├── flows/                    # End-to-end page/feature flow docs (Browser -> DB)
+│   └── schemas/                  # Downstream backend database ERDs (catalog, user, order, inventory)
 ├── frontend/                     # Next.js web application
 ├── .gitignore                    # Global git ignore rules (Java & Node)
-├── FLOW.md                       # Visual end-to-end request flow & architecture guide
 └── README.md                     # Project documentation
 ```
 

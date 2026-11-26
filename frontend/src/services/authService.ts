@@ -1,34 +1,6 @@
 import { readAppConfig } from "@/config/envConfig";
+import { convertApiResponse } from "@/services/apiClient";
 import { ApiResponse, AuthResponse, LoginRequest, UserResponse } from "@/types/auth";
-
-const parseAuthResponse = async (httpResponse: Response): Promise<ApiResponse<AuthResponse>> => {
-  const rawBody = await httpResponse.text();
-  if (rawBody.trim().length > 0) {
-    try {
-      const parsed = JSON.parse(rawBody) as Partial<ApiResponse<AuthResponse>>;
-      return {
-        timestamp: parsed.timestamp,
-        status: typeof parsed.status === "number" ? parsed.status : httpResponse.status,
-        message:
-          parsed.message ||
-          `Authentication request failed with HTTP status ${httpResponse.status}.`,
-        data: parsed.data ?? null,
-      };
-    } catch {
-      return {
-        status: httpResponse.status,
-        message: `Authentication request failed with HTTP status ${httpResponse.status}.`,
-        data: null,
-      };
-    }
-  }
-
-  return {
-    status: httpResponse.status,
-    message: `Authentication request failed with HTTP status ${httpResponse.status}.`,
-    data: null,
-  };
-};
 
 /**
  * Sends login credentials to the API Gateway on port 8080 (/api/v1/auth/login).
@@ -49,7 +21,7 @@ export const createAuthLogin = async (
       body: JSON.stringify(payload),
     });
 
-    return await parseAuthResponse(httpResponse);
+    return await convertApiResponse<AuthResponse>(httpResponse, "Authentication request");
   } catch {
     return {
       status: 503,
@@ -89,12 +61,12 @@ export const readAuthUserProfile = (): UserResponse | null => {
   if (typeof window === "undefined") {
     return null;
   }
-  const rawProfile = localStorage.getItem("userProfile");
-  if (!rawProfile) {
+  const profile = localStorage.getItem("userProfile");
+  if (!profile) {
     return null;
   }
   try {
-    return JSON.parse(rawProfile) as UserResponse;
+    return JSON.parse(profile) as UserResponse;
   } catch {
     return null;
   }

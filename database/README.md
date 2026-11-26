@@ -61,7 +61,7 @@ docker compose ps
 
 > **Important:** Backend microservices do **NOT** automatically wipe or migrate databases on startup. Database initialization and migrations are triggered **manually on-demand** from this `database/` folder.
 
-#### PowerShell Initialization: [`local-init-data.ps1`](file:///C:/Projects/eSupermarket/database/local-init-data.ps1)
+#### PowerShell Initialization: [`local-init-data.ps1`](./local-init-data.ps1)
 Run directly inside PowerShell:
 
 ```powershell
@@ -129,4 +129,4 @@ You can connect to `catalog_db` via **DBeaver** or **pgAdmin**:
 - **Username:** `application`
 - **Password:** `123456`
 
-Open and run [`test-catalog-queries.sql`](file:///C:/Projects/eSupermarket/database/test-catalog-queries.sql) to inspect the catalog, verify category trees, check spec chips, and preview the JSON responses.
+Open and run [`test-catalog-queries.sql`](./test-catalog-queries.sql) to inspect the catalog, verify category trees, check spec chips, and preview the JSON responses.

@@ -4,31 +4,45 @@ import { ApiResponse } from "@/types/api";
 const networkErrorMessage =
   "Unable to connect to the server. Please check that the API Gateway is running.";
 
-const parseApiResponse = async <T>(httpResponse: Response): Promise<ApiResponse<T>> => {
-  const rawBody = await httpResponse.text();
-  if (rawBody.trim().length > 0) {
-    try {
-      const parsed = JSON.parse(rawBody) as Partial<ApiResponse<T>>;
-      return {
-        timestamp: parsed.timestamp,
-        status: typeof parsed.status === "number" ? parsed.status : httpResponse.status,
-        message: parsed.message || `Request failed with HTTP status ${httpResponse.status}.`,
-        data: parsed.data ?? null,
-      };
-    } catch {
+/**
+ * Converts a Fetch Response into the uniform ApiResponse<T> envelope.
+ */
+export const convertApiResponse = async <T>(
+  httpResponse: Response,
+  actionLabel: string = "Request",
+): Promise<ApiResponse<T>> => {
+  const fallbackMessage = `${actionLabel} failed with HTTP status ${httpResponse.status}.`;
+  const body = await httpResponse.text();
+  if (body.trim().length === 0) {
+    return {
+      status: httpResponse.status,
+      message: fallbackMessage,
+      data: null,
+    };
+  }
+
+  try {
+    const envelope = JSON.parse(body) as Partial<ApiResponse<T>> | null;
+    if (!envelope || typeof envelope !== "object") {
       return {
         status: httpResponse.status,
-        message: `Request failed with HTTP status ${httpResponse.status}.`,
+        message: fallbackMessage,
         data: null,
       };
     }
+    return {
+      timestamp: envelope.timestamp,
+      status: typeof envelope.status === "number" ? envelope.status : httpResponse.status,
+      message: envelope.message || fallbackMessage,
+      data: envelope.data ?? null,
+    };
+  } catch {
+    return {
+      status: httpResponse.status,
+      message: fallbackMessage,
+      data: null,
+    };
   }
-
-  return {
-    status: httpResponse.status,
-    message: `Request failed with HTTP status ${httpResponse.status}.`,
-    data: null,
-  };
 };
 
 /**
@@ -61,7 +75,7 @@ export const readGatewayResource = async <T>(
 
   try {
     const httpResponse = await fetch(targetUrl, fetchOptions);
-    return await parseApiResponse<T>(httpResponse);
+    return await convertApiResponse<T>(httpResponse);
   } catch {
     return {
       status: 503,
